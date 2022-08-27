@@ -10,6 +10,7 @@ class PrismaticDistanceJoint (Framework):
 
     def __init__(self):
         Framework.__init__(self)
+        self.world.gravity = (0, 0)
 
         body = self.world.CreateStaticBody(
             position = (10, 0),
@@ -19,7 +20,7 @@ class PrismaticDistanceJoint (Framework):
             )
 
         limb = self.world.CreateDynamicBody(
-            position = (-5, 0),
+            position = (-10, 0),
             fixtures = b2FixtureDef(density = 2.0,
                                     friction = 0.6,
                                     shape = b2PolygonShape(box = (5, 5)),
@@ -32,7 +33,7 @@ class PrismaticDistanceJoint (Framework):
             anchor = (0, 0),
             axis = (1, 0),
             lowerTranslation = -5.0,
-            upperTranslation = 0,
+            upperTranslation = 5,
             enableLimit = True,
             #motorForce = 1.0, #(Doesn't work)
             motorSpeed = 0.0,
@@ -44,8 +45,10 @@ class PrismaticDistanceJoint (Framework):
             bodyB = limb,
             anchorA = (0, 0),
             anchorB = (0, 0),
-            frequencyHz = 1.0,
-            dampingRatio = 0.8
+            # oscillations per second (for evey oscillator with 0 damping ratio)
+            frequencyHz = 2.0,
+            dampingRatio = 0.1,
+            collideConnected = True
         )
 
         self.go = False
