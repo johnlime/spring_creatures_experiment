@@ -3,8 +3,8 @@ from Box2D.examples.framework import (Framework, Keys, main)
 
 from math import sin, pi, sqrt
 
-class PrismaticDistanceJoint (Framework):
-    name = "PrismaticJoint"
+class PrismaticDistanceRevoluteJoint (Framework):
+    name = "PrismaticDistanceRevoluteJoint"
     description = 'g to stop/go'
     count = 800
 
@@ -27,8 +27,25 @@ class PrismaticDistanceJoint (Framework):
                                     ),
         )
 
-        self.prismatic_joint = self.world.CreatePrismaticJoint(
+        knob = self.world.CreateDynamicBody(
+            position = (0, 0),
+            fixtures = b2FixtureDef(density = 2.0,
+                                    friction = 0.6,
+                                    shape = b2CircleShape(pos=(0, 0), radius=0.5),
+                                    ),
+        )
+
+        self.revolute_joint = self.world.CreateRevoluteJoint(
             bodyA = body,
+            bodyB = knob,
+            anchor = (0, 0),
+            lowerAngle = -0.5 ** b2_pi,
+            upperAngle = 0.5 ** b2_pi,
+            enableLimit = True
+        )
+
+        self.prismatic_joint = self.world.CreatePrismaticJoint(
+            bodyA = knob,
             bodyB = limb,
             anchor = (0, 0),
             axis = (1, 0),
@@ -41,7 +58,7 @@ class PrismaticDistanceJoint (Framework):
         )
 
         self.distance_joint = self.world.CreateDistanceJoint(
-            bodyA = body,
+            bodyA = knob,
             bodyB = limb,
             anchorA = (0, 0),
             anchorB = (0, 0),
@@ -71,4 +88,4 @@ class PrismaticDistanceJoint (Framework):
                            )
 
 if __name__ == "__main__":
-    main(PrismaticDistanceJoint)
+    main(PrismaticDistanceRevoluteJoint)
