@@ -31,6 +31,7 @@ class PrismaticDistanceRevoluteJoint (Framework):
             position = (0, 0),
             fixtures = b2FixtureDef(density = 2.0,
                                     friction = 0.6,
+                                    # origin is relative to the body position
                                     shape = b2CircleShape(pos=(0, 0), radius=0.5),
                                     ),
         )
