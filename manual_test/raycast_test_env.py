@@ -10,15 +10,16 @@ class RaycastTest (Framework):
 
     def __init__(self):
         Framework.__init__(self)
+        self.world.gravity = (0, 0)
 
         body = self.world.CreateStaticBody(
             position = (10, 0),
             # (5, 5) in all directions
             # dimension is (10, 10)
-            shapes = b2PolygonShape(box = (10, 5))
+            shapes = b2PolygonShape(box = (10, 5)) # you might want to keep this
             )
 
-        limb = self.world.CreateDynamicBody(
+        self.limb = self.world.CreateDynamicBody(
             position = (-5, 0),
             fixtures = b2FixtureDef(density = 2.0,
                                     friction = 0.6,
@@ -26,9 +27,9 @@ class RaycastTest (Framework):
                                     ),
         )
 
-        self.joint = self.world.CreatePrismaticJoint(
+        joint = self.world.CreatePrismaticJoint(
             bodyA = body,
-            bodyB = limb,
+            bodyB = self.limb,
             anchor = (0, 0),
             axis = (1, 0),
             lowerTranslation = -5.0,
@@ -51,6 +52,17 @@ class RaycastTest (Framework):
 
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
+
+        input = b2RayCastInput(p1 = (0, 0),
+                               p2 = (-1, 0),
+                               maxFraction = 4)
+        output = b2RayCastOutput()
+        transform = b2Transform()
+        hit = self.limb.fixtures[0].RayCast(output, input, 0)
+        if hit:
+            hit_point = input.p1 + output.fraction * (input.p2 - input.p1)
+            print(hit_point)
+
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),
