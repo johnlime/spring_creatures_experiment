@@ -12,32 +12,10 @@ class SpringGeneration (Framework):
         Framework.__init__(self)
         self.world.gravity = (0, 0)
 
-        self.generate_joint()
+        pos_x, pos_y = 0, 0
+        dim_x, dim_y = 5, 5
+        assert dim_x > 0 and dim_y > 0
 
-        self.go = False
-        self.time = 0.0
-
-    def generate_joint(self,
-            pos_x = 0, pos_y = 0,
-            dim_x = 5, dim_y = 5,
-            knob_x_ratio = 1, knob_y_ratio = 1,
-            ext_pos_x = 20, ext_pos_y = 20,
-            ext_dim_x = 5, ext_dim_y = 5,
-            ext_knob_x_ratio = -1, ext_knob_y_ratio = -1,
-            prismatic_translation_low = -5, prismatic_translation_high = 5,
-            ):
-
-        """
-        Generate Knob
-
-        dim_x > 0;
-        dim_y > 0;
-        (-1 < knob_x_ratio < 1
-            && abs(knob_y_ratio) = 1)
-            ||
-        (-1 < knob_y_ratio < 1
-            && abs(knob_x_ratio) = 1)
-        """
         # limb_base = self.world.CreateDynamicBody(
         #     position = (pos_x, pos_y),
         #     fixtures = b2FixtureDef(density = 2.0,
@@ -46,13 +24,48 @@ class SpringGeneration (Framework):
         #                             ),
         # )
 
+        # create base body
         limb_base = self.world.CreateStaticBody(
             position = (pos_x, pos_y),
             # (5, 5) in all directions
             # dimension is (10, 10)
             shapes = b2PolygonShape(box = (dim_x, dim_y))
-            )
+        )
 
+        self.generate_joint(limb_base)
+
+
+        self.go = False
+        self.time = 0.0
+
+    def generate_joint(self, base_body,
+            # joint extension...
+            knob_x_ratio = 1, knob_y_ratio = 1,     # joint node location
+            joint_angle = np.pi/4,                  # angle of the prismatic joint
+            joint_set_distance = 20,                # how far the prismatic joint goes
+            #
+            # ifelse shaperaycast hit detection lower than extension
+            # just try it out with rigid bodies possibly colliding
+            #
+            # body extension...
+            ext_dim_x = 5, ext_dim_y = 5,                       # new body's dimensions
+            ext_knob_x_ratio = -1, ext_knob_y_ratio = -1,       # new body's revolute node location
+            ext_angle = 0,                                      # new body's rotation
+            #
+            # prismatic-distance joint settings
+            prismatic_translation_low = -5, prismatic_translation_high = 5,
+            ):
+
+        """
+        Generate Knob for Prismatic-Distance Joint
+        """
+        assert \
+        (-1 < knob_x_ratio and knob_x_ratio < 1 \
+            and abs(knob_y_ratio) = 1) or \     # otherwise, the knob would end up inside the base body
+        (-1 < knob_x_ratio and knob_x_ratio < 1 \
+            and abs(knob_x_ratio) = 1)
+
+        # create revolute joint on base body
         knob = self.world.CreateDynamicBody(
             position = (pos_x + dim_x * knob_x_ratio,
                         pos_y + dim_y * knob_y_ratio),
@@ -63,7 +76,7 @@ class SpringGeneration (Framework):
         )
 
         revolute_joint = self.world.CreateRevoluteJoint(
-            bodyA = limb_base,
+            bodyA = base_body,
             bodyB = knob,
             anchor = knob.worldCenter,
             lowerAngle = -0.5 ** b2_pi,
@@ -72,23 +85,13 @@ class SpringGeneration (Framework):
         )
 
         """
+        Raycast to see where the prismatic joint would lead to
+        """
+        ...
+
+        """
         Generate Body Extension and Connect Spring
         """
-        limb_extension = self.world.CreateDynamicBody(
-            position = (pos_x + ext_pos_x, pos_y + ext_pos_y),
-            fixtures = b2FixtureDef(density = 2.0,
-                                    friction = 0.6,
-                                    shape = b2PolygonShape(
-                                        box = (ext_dim_x, ext_dim_y)
-                                        ),
-                                    ),
-        )
-
-        spring_joint_anchor = (limb_extension.worldCenter[0]
-                                   + ext_dim_x * ext_knob_x_ratio,
-                               limb_extension.worldCenter[1]
-                                   + ext_dim_y * ext_knob_y_ratio)
-
         prismatic_joint = self.world.CreatePrismaticJoint(
             bodyA = knob,
             bodyB = limb_extension,
@@ -113,6 +116,21 @@ class SpringGeneration (Framework):
             dampingRatio = 0.1,
             collideConnected = True
         )
+
+        limb_extension = self.world.CreateDynamicBody(
+            position = (pos_x + ext_pos_x, pos_y + ext_pos_y),
+            fixtures = b2FixtureDef(density = 2.0,
+                                    friction = 0.6,
+                                    shape = b2PolygonShape(
+                                        box = (ext_dim_x, ext_dim_y)
+                                        ),
+                                    ),
+        )
+
+        spring_joint_anchor = (limb_extension.worldCenter[0]
+                                   + ext_dim_x * ext_knob_x_ratio,
+                               limb_extension.worldCenter[1]
+                                   + ext_dim_y * ext_knob_y_ratio)
 
     def Keyboard(self, key):
         if key == Keys.K_g:
