@@ -3,8 +3,8 @@ from Box2D.examples.framework import (Framework, Keys, main)
 
 from math import sin, pi, sqrt
 
-class RaycastTest (Framework):
-    name = "RaycastTest"
+class ContactManifoldsTest (Framework):
+    name = "ContactManifoldsTest"
     description = 'g to stop/go'
     count = 800
 
@@ -12,7 +12,7 @@ class RaycastTest (Framework):
         Framework.__init__(self)
         self.world.gravity = (0, 0)
 
-        body = self.world.CreateStaticBody(
+        self.body = self.world.CreateStaticBody(
             position = (10, 0),
             # (5, 5) in all directions
             # dimension is (10, 10)
@@ -20,15 +20,23 @@ class RaycastTest (Framework):
             )
 
         self.limb = self.world.CreateDynamicBody(
-            position = (-5, 0),
+            position = (-4, 0),
             fixtures = b2FixtureDef(density = 2.0,
                                     friction = 0.6,
                                     shape = b2PolygonShape(box = (5, 5)),
                                     ),
         )
 
+        self.worldManifold = b2WorldManifold()
+        self.localManifold = b2Manifold()
+        self.worldManifold.Initialize(self.localManifold,
+                                 self.body.transform, self.body.fixtures[0].shape.radius,
+                                 self.limb.transform, self.limb.fixtures[0].shape.radius)
+        points = [self.worldManifold.points[i] for i in range(self.localManifold.pointCount)]
+        print(points)
+
         joint = self.world.CreatePrismaticJoint(
-            bodyA = body,
+            bodyA = self.body,
             bodyB = self.limb,
             anchor = (0, 0),
             axis = (1, 0),
@@ -53,17 +61,8 @@ class RaycastTest (Framework):
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
 
-        # Limb distance detection
-        input = b2RayCastInput(p1 = (0, 0),
-                               p2 = (-1, 0),
-                               maxFraction = 4)
-        output = b2RayCastOutput()
-        transform = b2Transform()
-        hit = self.limb.fixtures[0].RayCast(output, input, 0)
-        if hit:
-            hit_point = input.p1 + output.fraction * (input.p2 - input.p1)
-            print(hit_point)
-
+        print(self.worldManifold.normal)
+        print(self.localManifold.localNormal)
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),
@@ -72,4 +71,4 @@ class RaycastTest (Framework):
                            )
 
 if __name__ == "__main__":
-    main(RaycastTest)
+    main(ContactManifoldsTest)

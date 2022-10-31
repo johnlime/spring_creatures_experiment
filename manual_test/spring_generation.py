@@ -87,6 +87,11 @@ class SpringGeneration (Framework):
         """
         Raycast to see where the prismatic joint would lead to
         """
+        Framework.Step(self, settings)
+        # get normal of the knob position on base body
+            # contact manifold (test...)
+            # raycast from knob to body to get normal vector
+        # raycacst from knob to a set angle
         ...
 
         """
