@@ -2,6 +2,7 @@ from Box2D import *
 from Box2D.examples.framework import (Framework, Keys, main)
 
 from math import sin, pi, sqrt
+import numpy as np
 
 class SpringGeneration (Framework):
     name = "SpringGeneration"
@@ -32,7 +33,7 @@ class SpringGeneration (Framework):
             shapes = b2PolygonShape(box = (dim_x, dim_y))
         )
 
-        self.generate_joint(limb_base)
+        self.generate_joint(limb_base, 0.99, 1)
 
 
         self.go = False
@@ -59,16 +60,21 @@ class SpringGeneration (Framework):
         """
         Generate Knob for Prismatic-Distance Joint
         """
+        # otherwise, the knob would end up inside the base body
         assert \
         (-1 < knob_x_ratio and knob_x_ratio < 1 \
-            and abs(knob_y_ratio) = 1) or \     # otherwise, the knob would end up inside the base body
+            and abs(knob_y_ratio) == 1) or \
         (-1 < knob_x_ratio and knob_x_ratio < 1 \
-            and abs(knob_x_ratio) = 1)
+            and abs(knob_x_ratio) == 1)
 
         # create revolute joint on base body
+        print(base_body.fixtures[0].shape)
+        dim_x = abs(base_body.fixtures[0].shape.vertices[0][0])
+        dim_y = abs(base_body.fixtures[0].shape.vertices[0][1])
+
         knob = self.world.CreateDynamicBody(
-            position = (pos_x + dim_x * knob_x_ratio,
-                        pos_y + dim_y * knob_y_ratio),
+            position = (base_body.position[0] + dim_x * knob_x_ratio,
+                        base_body.position[1] + dim_y * knob_y_ratio),
             fixtures = b2FixtureDef(density = 2.0,
                                     friction = 0.6,
                                     shape = b2CircleShape(pos=(0, 0), radius=0.5),
@@ -87,10 +93,20 @@ class SpringGeneration (Framework):
         """
         Raycast to see where the prismatic joint would lead to
         """
-        Framework.Step(self, settings)
         # get normal of the knob position on base body
-            # contact manifold (test...)
-            # raycast from knob to body to get normal vector
+            # x contact manifold (test...)
+            # xx raycast from knob to body to get normal vector
+            # get edge that the knob is located on -> manually calculate normal...
+        self.worldManifold = b2WorldManifold()
+        self.localManifold = b2Manifold()
+        self.worldManifold.Initialize(self.localManifold,
+            base_body.transform, base_body.fixtures[0].shape.radius,
+            knob.transform, knob.fixtures[0].shape.radius)
+        points = [self.worldManifold.points[i] for i in range(self.localManifold.pointCount)]
+        print(points)
+
+        dfdsfdafas # stop script
+        Framework.Step(self, settings)
         # raycacst from knob to a set angle
         ...
 
