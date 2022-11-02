@@ -99,6 +99,8 @@ class SpringGeneration (Framework):
         detected_edge = {
             "vertex 0": None,
             "vertex 1": None,
+            "horizontal": False,
+            "slope": None,
         }
         for i, vertex in enumerate(vertices):
             prev_vertex = vertices[(i - 1) % total_vertices]
@@ -106,6 +108,7 @@ class SpringGeneration (Framework):
             detected_edge["vertex 1"] = vertex
 
             vertical = (vertex[0] - prev_vertex[0]) == 0
+            detected_edge["horizontal"] = (vertex[1] - prev_vertex[1]) == 0
 
             border_condition = lambda x, y: \
                 x >= np.sort([vertex[0], prev_vertex[0]])[0] and \
@@ -120,6 +123,7 @@ class SpringGeneration (Framework):
 
             else:
                 slope = (vertex[1] - prev_vertex[1]) / (vertex[0] - prev_vertex[0])
+                detected_edge["slope"] = slope
                 # edge function with boundary conditions taken into account
                 on_edge = lambda x, y: slope * (x - vertex[0]) - (y - vertex[1]) == 0
                 assert on_edge(prev_vertex[0], prev_vertex[1])
@@ -127,13 +131,26 @@ class SpringGeneration (Framework):
                 if on_edge(knob.position[0], knob.position[1]):
                     break
 
-        print(knob.position, detected_edge)
-
-        dfdsfdafas # stop script
-
         """
-        Raycast to see where the prismatic joint would lead to
+        Calculate the normal vector and the direction of the joint
         """
+        # get the normal vector
+        normal_vector = np.empty(2)
+        if detected_edge["horizontal"]:
+            normal_vector[0], normal_vector[1] = 0, 1
+        else:
+            normal_vector = np.array([1, - 1 / detected_edge["slope"]])
+            normal_vector_norm = np.linalg.norm(normal_vector, 2)
+            normal_vector = normal_vector / normal_vector_norm
+
+        assert -np.pi/2 < joint_angle and joint_angle < np.pi/2
+
+        directional_angle = np.arccos(normal_vector[0]) - joint_angle
+        directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
+
+        fdsfadafsd
+        knob.position
+
         Framework.Step(self, settings)
         # raycacst from knob to a set angle
         ...
