@@ -68,7 +68,6 @@ class SpringGeneration (Framework):
             and abs(knob_x_ratio) == 1)
 
         # create revolute joint on base body
-        print(base_body.fixtures[0].shape)
         dim_x = abs(base_body.fixtures[0].shape.vertices[0][0])
         dim_y = abs(base_body.fixtures[0].shape.vertices[0][1])
 
@@ -91,21 +90,50 @@ class SpringGeneration (Framework):
         )
 
         """
-        Raycast to see where the prismatic joint would lead to
+        Find out the edge that the knob is located on
         """
         # get normal of the knob position on base body
-            # x contact manifold (test...)
-            # xx raycast from knob to body to get normal vector
-            # get edge that the knob is located on -> manually calculate normal...
-        self.worldManifold = b2WorldManifold()
-        self.localManifold = b2Manifold()
-        self.worldManifold.Initialize(self.localManifold,
-            base_body.transform, base_body.fixtures[0].shape.radius,
-            knob.transform, knob.fixtures[0].shape.radius)
-        points = [self.worldManifold.points[i] for i in range(self.localManifold.pointCount)]
-        print(points)
+        # get edge that the knob is located on -> manually calculate normal...
+        vertices = base_body.fixtures[0].shape.vertices
+        total_vertices = len(vertices)
+        detected_edge = {
+            "vertex 0": None,
+            "vertex 1": None,
+        }
+        for i, vertex in enumerate(vertices):
+            prev_vertex = vertices[(i - 1) % total_vertices]
+            detected_edge["vertex 0"] = prev_vertex
+            detected_edge["vertex 1"] = vertex
+
+            vertical = (vertex[0] - prev_vertex[0]) == 0
+
+            border_condition = lambda x, y: \
+                x >= np.sort([vertex[0], prev_vertex[0]])[0] and \
+                x <= np.sort([vertex[0], prev_vertex[0]])[1] and \
+                y >= np.sort([vertex[1], prev_vertex[1]])[0] and \
+                y <= np.sort([vertex[1], prev_vertex[1]])[1]
+
+            if vertical:
+                if border_condition(knob.position[0], knob.position[1]):
+                    break # edge is on the vertical edge
+                pass
+
+            else:
+                slope = (vertex[1] - prev_vertex[1]) / (vertex[0] - prev_vertex[0])
+                # edge function with boundary conditions taken into account
+                on_edge = lambda x, y: slope * (x - vertex[0]) - (y - vertex[1]) == 0
+                assert on_edge(prev_vertex[0], prev_vertex[1])
+
+                if on_edge(knob.position[0], knob.position[1]):
+                    break
+
+        print(knob.position, detected_edge)
 
         dfdsfdafas # stop script
+
+        """
+        Raycast to see where the prismatic joint would lead to
+        """
         Framework.Step(self, settings)
         # raycacst from knob to a set angle
         ...
