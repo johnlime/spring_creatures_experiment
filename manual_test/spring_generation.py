@@ -4,6 +4,8 @@ from Box2D.examples.framework import (Framework, Keys, main)
 from math import sin, pi, sqrt
 import numpy as np
 
+from settings import *
+
 class SpringGeneration (Framework):
     name = "SpringGeneration"
     description = 'g to stop/go'
@@ -49,6 +51,7 @@ class SpringGeneration (Framework):
             # just try it out with rigid bodies possibly colliding
             #
             # body extension...
+            ext_pos_x = 20, ext_pos_y = 20,                     # (new body's position) we don't need this past testing
             ext_dim_x = 5, ext_dim_y = 5,                       # new body's dimensions
             ext_knob_x_ratio = -1, ext_knob_y_ratio = -1,       # new body's revolute node location
             ext_angle = 0,                                      # new body's rotation
@@ -64,7 +67,7 @@ class SpringGeneration (Framework):
         assert \
         (-1 < knob_x_ratio and knob_x_ratio < 1 \
             and abs(knob_y_ratio) == 1) or \
-        (-1 < knob_x_ratio and knob_x_ratio < 1 \
+        (-1 < knob_y_ratio and knob_y_ratio < 1 \
             and abs(knob_x_ratio) == 1)
 
         # create revolute joint on base body
@@ -148,16 +151,41 @@ class SpringGeneration (Framework):
         directional_angle = np.arccos(normal_vector[0]) - joint_angle
         directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
 
-        fdsfadafsd
-        knob.position
 
-        Framework.Step(self, settings)
+        limb_extension = self.world.CreateDynamicBody(
+            position = (base_body.position[0] + ext_pos_x, base_body.position[1] + ext_pos_y),
+            fixtures = b2FixtureDef(density = 2.0,
+                                    friction = 0.6,
+                                    shape = b2PolygonShape(
+                                        box = (ext_dim_x, ext_dim_y)
+                                        ),
+                                    ),
+        )
+        Framework.Step(self, default_settings)
         # raycacst from knob to a set angle
-        ...
+        input = b2RayCastInput(p1 = knob.position,
+                               p2 = np.array(knob.position) + directional_vector,
+                               maxFraction = joint_set_distance)
+        output = b2RayCastOutput()
+        for tmp_body in self.world.bodies:
+            try:
+                hit = tmp_body.fixtures[0].RayCast(output, input, 0)
+                if hit:
+                    hit_point = input.p1 + output.fraction * (input.p2 - input.p1)
+                    print(tmp_body)
+                    print(hit_point)
+            except:
+                pass
 
         """
         Generate Body Extension and Connect Spring
         """
+
+        spring_joint_anchor = (limb_extension.worldCenter[0]
+                                   + ext_dim_x * ext_knob_x_ratio,
+                               limb_extension.worldCenter[1]
+                                   + ext_dim_y * ext_knob_y_ratio)
+
         prismatic_joint = self.world.CreatePrismaticJoint(
             bodyA = knob,
             bodyB = limb_extension,
@@ -182,21 +210,6 @@ class SpringGeneration (Framework):
             dampingRatio = 0.1,
             collideConnected = True
         )
-
-        limb_extension = self.world.CreateDynamicBody(
-            position = (pos_x + ext_pos_x, pos_y + ext_pos_y),
-            fixtures = b2FixtureDef(density = 2.0,
-                                    friction = 0.6,
-                                    shape = b2PolygonShape(
-                                        box = (ext_dim_x, ext_dim_y)
-                                        ),
-                                    ),
-        )
-
-        spring_joint_anchor = (limb_extension.worldCenter[0]
-                                   + ext_dim_x * ext_knob_x_ratio,
-                               limb_extension.worldCenter[1]
-                                   + ext_dim_y * ext_knob_y_ratio)
 
     def Keyboard(self, key):
         if key == Keys.K_g:

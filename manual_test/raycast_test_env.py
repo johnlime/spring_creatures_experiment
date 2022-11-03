@@ -40,6 +40,18 @@ class RaycastTest (Framework):
             enableMotor = True,
         )
 
+        # Limb distance detection
+        input = b2RayCastInput(p1 = (0, 0),
+                               p2 = (-1, 0),
+                               maxFraction = 4)
+        output = b2RayCastOutput()
+        transform = b2Transform()
+        hit = self.limb.fixtures[0].RayCast(output, input, 0)
+        if hit:
+            hit_point = input.p1 + output.fraction * (input.p2 - input.p1)
+            print("First Hit: ", hit_point) # doesn't work
+
+
         self.go = False
         self.time = 0.0
 
