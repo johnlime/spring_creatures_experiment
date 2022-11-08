@@ -35,6 +35,17 @@ class SpringGeneration (Framework):
             shapes = b2PolygonShape(box = (dim_x, dim_y))
         )
 
+        # create external body (for collision test)
+        limb_extension = self.world.CreateDynamicBody(
+            position = (20, 20),
+            fixtures = b2FixtureDef(density = 2.0,
+                                    friction = 0.6,
+                                    shape = b2PolygonShape(
+                                        box = (5, 5)
+                                        ),
+                                    ),
+        )
+
         self.generate_joint(limb_base, 0.99, 1)
 
 
@@ -151,40 +162,54 @@ class SpringGeneration (Framework):
         directional_angle = np.arccos(normal_vector[0]) - joint_angle
         directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
 
-
-        limb_extension = self.world.CreateDynamicBody(
-            position = (base_body.position[0] + ext_pos_x, base_body.position[1] + ext_pos_y),
-            fixtures = b2FixtureDef(density = 2.0,
-                                    friction = 0.6,
-                                    shape = b2PolygonShape(
-                                        box = (ext_dim_x, ext_dim_y)
-                                        ),
-                                    ),
-        )
         Framework.Step(self, default_settings)
         # raycacst from knob to a set angle
         input = b2RayCastInput(p1 = knob.position,
                                p2 = np.array(knob.position) + directional_vector,
                                maxFraction = joint_set_distance)
         output = b2RayCastOutput()
+
+        """
+        Body Extension Generation/Detection
+        """
+        limb_extension = None
+        spring_joint_anchor = None
+        hit = False
         for tmp_body in self.world.bodies:
+            #####
+            # Detect any collision between the ray and each body
+            #####
             try:
                 hit = tmp_body.fixtures[0].RayCast(output, input, 0)
+                print(hit)
                 if hit:
                     hit_point = input.p1 + output.fraction * (input.p2 - input.p1)
-                    print(tmp_body)
-                    print(hit_point)
+                    limb_extension = tmp_body
+                    spring_joint_anchor = hit_point
+                    # print(tmp_body)       # debugging
+                    # print(hit_point)
+                    break
             except:
                 pass
 
-        """
-        Generate Body Extension and Connect Spring
-        """
+        if not hit:
+            #####
+            # Generate Body Extension and Connect Spring
+            #####
+            limb_extension = self.world.CreateDynamicBody(
+                position = (ext_pos_x, ext_pos_y),
+                fixtures = b2FixtureDef(density = 2.0,
+                                        friction = 0.6,
+                                        shape = b2PolygonShape(
+                                            box = (ext_dim_x, ext_dim_y)
+                                            ),
+                                        ),
+            )
+            spring_joint_anchor = (limb_extension.worldCenter[0]
+                                       + ext_dim_x * ext_knob_x_ratio,
+                                   limb_extension.worldCenter[1]
+                                       + ext_dim_y * ext_knob_y_ratio)
 
-        spring_joint_anchor = (limb_extension.worldCenter[0]
-                                   + ext_dim_x * ext_knob_x_ratio,
-                               limb_extension.worldCenter[1]
-                                   + ext_dim_y * ext_knob_y_ratio)
 
         prismatic_joint = self.world.CreatePrismaticJoint(
             bodyA = knob,
