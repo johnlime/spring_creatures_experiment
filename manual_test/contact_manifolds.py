@@ -26,6 +26,7 @@ class ContactManifoldsTest (Framework):
                                     shape = b2PolygonShape(box = (5, 5)),
                                     ),
         )
+        print(self.limb.fixtures[0])
 
         self.worldManifold = b2WorldManifold()
         self.localManifold = b2Manifold()
@@ -61,8 +62,8 @@ class ContactManifoldsTest (Framework):
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
 
-        print(self.worldManifold.normal)
-        print(self.localManifold.localNormal)
+        # print(self.worldManifold.normal)
+        # print(self.localManifold.localNormal)
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),

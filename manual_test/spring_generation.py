@@ -37,18 +37,18 @@ class SpringGeneration (Framework):
         )
 
         # create external body (for collision test)
-        limb_extension = self.world.CreateDynamicBody(
-            position = (20, 20),
-            fixtures = b2FixtureDef(density = 2.0,
-                                    friction = 0.6,
-                                    shape = b2PolygonShape(
-                                        box = (5, 5)
-                                        ),
-                                    ),
-        )
+        # limb_extension = self.world.CreateDynamicBody(
+        #     position = (20, 20),
+        #     fixtures = b2FixtureDef(density = 2.0,
+        #                             friction = 0.6,
+        #                             shape = b2PolygonShape(
+        #                                 box = (5, 5)
+        #                                 ),
+        #                             ),
+        # )
 
         self.generate_joint(limb_base, 0.99, 1)
-
+        self.generate_joint(limb_base, 0.10, 1)
 
         self.go = False
         self.time = 0.0
@@ -171,7 +171,7 @@ class SpringGeneration (Framework):
         output = b2RayCastOutput()
 
         """
-        Body Extension Generation/Detection
+        Body Extension Generation/Detection -> Joint Generation
         """
         limb_extension = None
         spring_joint_anchor = None
@@ -242,12 +242,22 @@ class SpringGeneration (Framework):
             collideConnected = True
         )
 
+        """
+        Body Aggregation
+        """
+        for contact in self.world.contacts:
+            print(contact)
+
     def Keyboard(self, key):
         if key == Keys.K_g:
             self.go = not self.go
 
     def Step(self, settings):
         Framework.Step(self, settings)
+
+        for i, contact in enumerate(self.world.contacts):
+            print(i, contact)
+
 
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
