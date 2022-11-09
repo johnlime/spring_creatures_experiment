@@ -3,6 +3,7 @@ from Box2D.examples.framework import (Framework, Keys, main)
 
 from math import sin, pi, sqrt
 import numpy as np
+from copy import copy, deepcopy
 
 from settings import *
 
@@ -162,7 +163,7 @@ class SpringGeneration (Framework):
         directional_angle = np.arccos(normal_vector[0]) - joint_angle
         directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
 
-        Framework.Step(self, default_settings)
+        # Framework.Step(self, default_settings)        # unnecessary...?
         # raycacst from knob to a set angle
         input = b2RayCastInput(p1 = knob.position,
                                p2 = np.array(knob.position) + directional_vector,
@@ -174,25 +175,29 @@ class SpringGeneration (Framework):
         """
         limb_extension = None
         spring_joint_anchor = None
-        hit = False
+        hit_once = False
+        min_hit_distance = copy(joint_set_distance)
         for tmp_body in self.world.bodies:
             #####
             # Detect any collision between the ray and each body
             #####
             try:
                 hit = tmp_body.fixtures[0].RayCast(output, input, 0)
-                print(hit)
                 if hit:
-                    hit_point = input.p1 + output.fraction * (input.p2 - input.p1)
-                    limb_extension = tmp_body
-                    spring_joint_anchor = hit_point
-                    # print(tmp_body)       # debugging
-                    # print(hit_point)
-                    break
+                    hit_once = True
+                    hit_distance = output.fraction * (input.p2 - input.p1)
+                    hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
+                    if hit_distance < min_hit_distance:
+                        print("lower_hit_distance")
+                        min_hit_distance = hit_distance
+                        limb_extension = tmp_body
+                        spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
+                        print(tmp_body)           # debugging
+                        print(hit_point, min_hit_distance)
             except:
                 pass
 
-        if not hit:
+        if not hit_once:
             #####
             # Generate Body Extension and Connect Spring
             #####
@@ -210,6 +215,7 @@ class SpringGeneration (Framework):
                                    limb_extension.worldCenter[1]
                                        + ext_dim_y * ext_knob_y_ratio)
 
+        assert limb_extension != None and spring_joint_anchor != None
 
         prismatic_joint = self.world.CreatePrismaticJoint(
             bodyA = knob,
