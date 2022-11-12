@@ -245,6 +245,7 @@ class SpringGeneration (Framework):
         """
         Body Aggregation
         """
+        print("Generation")
         for contact in self.world.contacts:
             print(contact)
 
@@ -252,13 +253,13 @@ class SpringGeneration (Framework):
         if key == Keys.K_g:
             self.go = not self.go
 
-    def Step(self, settings):
+    def Step(self, settings = settings):
         Framework.Step(self, settings)
-
+        print("Runtime")
         for i, contact in enumerate(self.world.contacts):
             print(i, contact)
 
-
+        fjdsafsdfk
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
 
