@@ -50,6 +50,20 @@ class SpringGeneration (Framework):
         self.generate_joint(limb_base, 0.99, 1)
         self.generate_joint(limb_base, 0.10, 1)
 
+        """
+        Body Aggregation (After body generation, to save processing time)
+        """
+        Framework.Step(self, default_settings)      # collision or overlap are only detected simulation step
+        for i, contact in enumerate(self.world.contacts):
+            worldManifold = b2WorldManifold()
+            worldManifold.Initialize(contact.manifold,
+                                     contact.fixtureA.body.transform,
+                                     contact.fixtureA.shape.radius,
+                                     contact.fixtureB.body.transform,
+                                     contact.fixtureB.shape.radius)
+            points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
+            print(points)
+
         self.go = False
         self.time = 0.0
 
@@ -163,8 +177,7 @@ class SpringGeneration (Framework):
         directional_angle = np.arccos(normal_vector[0]) - joint_angle
         directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
 
-        # Framework.Step(self, default_settings)        # unnecessary...?
-        # raycacst from knob to a set angle
+        # raycast from knob to a set angle
         input = b2RayCastInput(p1 = knob.position,
                                p2 = np.array(knob.position) + directional_vector,
                                maxFraction = joint_set_distance)
@@ -242,26 +255,16 @@ class SpringGeneration (Framework):
             collideConnected = True
         )
 
-        """
-        Body Aggregation
-        """
-        print("Generation")
-        for contact in self.world.contacts:
-            print(contact)
-
     def Keyboard(self, key):
         if key == Keys.K_g:
             self.go = not self.go
 
-    def Step(self, settings = settings):
+    def Step(self, settings = default_settings):
         Framework.Step(self, settings)
-        print("Runtime")
-        for i, contact in enumerate(self.world.contacts):
-            print(i, contact)
-
-        fjdsafsdfk
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
+
+        print(len(self.world.contacts))
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),
