@@ -62,6 +62,15 @@ class SpringGeneration (Framework):
                                      contact.fixtureB.body.transform,
                                      contact.fixtureB.shape.radius)
             points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
+            for point in points:
+                self.world.CreateRevoluteJoint(
+                    bodyA = contact.fixtureA.body,
+                    bodyB = contact.fixtureB.body,
+                    anchor = point,
+                    lowerAngle = 0,
+                    upperAngle = 0,
+                    enableLimit = True
+                )
             print(points)
 
         self.go = False
