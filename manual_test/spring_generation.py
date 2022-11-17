@@ -20,21 +20,21 @@ class SpringGeneration (Framework):
         dim_x, dim_y = 5, 5
         assert dim_x > 0 and dim_y > 0
 
-        # limb_base = self.world.CreateDynamicBody(
-        #     position = (pos_x, pos_y),
-        #     fixtures = b2FixtureDef(density = 2.0,
-        #                             friction = 0.6,
-        #                             shape = b2PolygonShape(box = (dim_x, dim_y)),
-        #                             ),
-        # )
+        limb_base = self.world.CreateDynamicBody(
+            position = (pos_x, pos_y),
+            fixtures = b2FixtureDef(density = 2.0,
+                                    friction = 0.6,
+                                    shape = b2PolygonShape(box = (dim_x, dim_y)),
+                                    ),
+        )
 
         # create base body
-        limb_base = self.world.CreateStaticBody(
-            position = (pos_x, pos_y),
-            # (5, 5) in all directions
-            # dimension is (10, 10)
-            shapes = b2PolygonShape(box = (dim_x, dim_y))
-        )
+        # limb_base = self.world.CreateStaticBody(
+        #     position = (pos_x, pos_y),
+        #     # (5, 5) in all directions
+        #     # dimension is (10, 10)
+        #     shapes = b2PolygonShape(box = (dim_x, dim_y))
+        # )
 
         # create external body (for collision test)
         # limb_extension = self.world.CreateDynamicBody(
