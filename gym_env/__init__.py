@@ -1,1 +1,1 @@
-from spring_creature_generation_test import SpringCreatureGenerationTest
+from gym_env.spring_creature_generation_test import SpringCreatureGenerationTest
