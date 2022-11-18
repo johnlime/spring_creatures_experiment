@@ -12,11 +12,11 @@ class SpringGeneration (Framework):
     description = 'g to stop/go'
     count = 800
 
-    def __init__(self):
+    def __init__(self, pos_x = 0, pos_y = 0):
         Framework.__init__(self)
         self.world.gravity = (0, 0)
 
-        pos_x, pos_y = 0, 0
+        self.pos_x, self.pos_y = pos_x, pos_y
         dim_x, dim_y = 5, 5
         assert dim_x > 0 and dim_y > 0
 
