@@ -10,7 +10,9 @@ class SpringCreatureGenerationTest(gym.Env):
     """
     Generate spring creature limbs recursively
     """
-
+    name = "SpringCreatureGenerationTest"
+    description = 'g to stop/go'
+    count = 800
     def __init__(self):
         self.action_space
         self.observation_space

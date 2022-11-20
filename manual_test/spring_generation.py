@@ -16,12 +16,11 @@ class SpringGeneration (Framework):
         Framework.__init__(self)
         self.world.gravity = (0, 0)
 
-        pos_x, pos_y = 0, 0
         dim_x, dim_y = 5, 5
         assert dim_x > 0 and dim_y > 0
 
         limb_base = self.world.CreateDynamicBody(
-            position = (pos_x, pos_y),
+            position = (0, 0),
             fixtures = b2FixtureDef(density = 2.0,
                                     friction = 0.6,
                                     shape = b2PolygonShape(box = (dim_x, dim_y)),
@@ -49,31 +48,33 @@ class SpringGeneration (Framework):
         #                             ),
         # )
 
-        # self.generate_joint(limb_base, 0.99, 1)
-        # self.generate_joint(limb_base, 0.10, 1)
+        if morphogen_function == None:
+            # self.generate_joint(limb_base, 0.99, 1)
+            # self.generate_joint(limb_base, 0.10, 1)
 
-        # self.generate_joint(self.generate_joint(limb_base, 0.99, 1), 0.99, 1)
+            self.generate_joint(self.generate_joint(limb_base, 0.99, 1)[1], 0.99, 1)
 
-        """
-        Recursively generate positions for morphogen functions (CPPN) to generate limbs from
-        """
-        while len(bodies_to_scan) != 0:
-            body = bodies_to_scan[0]
-            knob_x_ratio = 0
-            knob_y_ratio = 0
-            for x in 0.1 * range(1, 10):
-                knob_x_ratio = 0.1 * x
-                for y in range(1, 10):
-                    knob_y_ratio = 0.1 * y
-                    genome = morphogen_function([
-                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
-                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
-                        ])
-                    if genome[0]: # should dictate whether to generate genome or not
-                        new_limb, limb_reference = generate_joint(body, genome)
-                        if new_limb:
-                            bodies_to_scan.append(limb_reference)
-            bodies_to_scan.pop(0)
+        else:
+            """
+            Recursively generate positions for morphogen functions (CPPN) to generate limbs from
+            """
+            while len(bodies_to_scan) != 0:
+                body = bodies_to_scan[0]
+                knob_x_ratio = 0
+                knob_y_ratio = 0
+                for x in 0.1 * range(1, 10):
+                    knob_x_ratio = 0.1 * x
+                    for y in range(1, 10):
+                        knob_y_ratio = 0.1 * y
+                        genome = morphogen_function([
+                            body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
+                            body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
+                            ])
+                        if genome[0]: # should dictate whether to generate genome or not
+                            new_limb, limb_reference = generate_joint(body, genome)
+                            if new_limb:
+                                bodies_to_scan.append(limb_reference)
+                bodies_to_scan.pop(0)
 
 
         """
