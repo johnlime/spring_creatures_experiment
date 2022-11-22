@@ -49,10 +49,10 @@ class SpringGeneration (Framework):
         # )
 
         if morphogen_function == None:
-            # self.generate_joint(limb_base, 0.99, 1)
-            # self.generate_joint(limb_base, 0.10, 1)
+            self.generate_joint(limb_base, 0.99, 1)
+            self.generate_joint(limb_base, -0.99, 1)
 
-            self.generate_joint(self.generate_joint(limb_base, 0.99, 1)[1], 0.99, 1)
+            # self.generate_joint(self.generate_joint(limb_base, 0.99, 1)[1], 0.99, 1)
 
         else:
             """
@@ -109,13 +109,10 @@ class SpringGeneration (Framework):
             joint_angle = np.pi/4,                  # angle of the prismatic joint
             joint_set_distance = 20,                # how far the prismatic joint goes
             # body extension...
-            ext_pos_x = 20, ext_pos_y = 20,                     # (new body's position) we don't need this past testing
             ext_dim_x = 5, ext_dim_y = 5,                       # new body's dimensions
-            ext_knob_x_ratio = -1, ext_knob_y_ratio = -1,       # new body's revolute node location
             ext_angle = 0,                                      # new body's rotation
-            #
             # prismatic-distance joint settings
-            prismatic_translation_low = -5, prismatic_translation_high = 5,
+            prismatic_translation_low = -np.inf, prismatic_translation_high = 5,
             ):
 
         """
@@ -151,70 +148,10 @@ class SpringGeneration (Framework):
             enableLimit = True
         )
 
-        """
-        Find out the edge that the knob is located on
-        """
-        # get normal of the knob position on base body
-        # get edge that the knob is located on -> manually calculate normal...
-        vertices = base_body.fixtures[0].shape.vertices
-        total_vertices = len(vertices)
-        detected_edge = {
-            "vertex 0": None,
-            "vertex 1": None,
-            "horizontal": False,
-            "slope": None,
-        }
-        for i, vertex in enumerate(vertices):
-            prev_vertex = vertices[(i - 1) % total_vertices]
-            detected_edge["vertex 0"] = prev_vertex
-            detected_edge["vertex 1"] = vertex
-
-            vertical = (vertex[0] - prev_vertex[0]) == 0
-            detected_edge["horizontal"] = (vertex[1] - prev_vertex[1]) == 0
-
-            border_condition = lambda x, y: \
-                x >= np.sort([vertex[0], prev_vertex[0]])[0] and \
-                x <= np.sort([vertex[0], prev_vertex[0]])[1] and \
-                y >= np.sort([vertex[1], prev_vertex[1]])[0] and \
-                y <= np.sort([vertex[1], prev_vertex[1]])[1]
-
-            if vertical:
-                if border_condition(knob.position[0], knob.position[1]):
-                    break # edge is on the vertical edge
-                pass
-
-            else:
-                slope = (vertex[1] - prev_vertex[1]) / (vertex[0] - prev_vertex[0])
-                detected_edge["slope"] = slope
-                # edge function with boundary conditions taken into account
-                on_edge = lambda x, y: slope * (x - vertex[0]) - (y - vertex[1]) == 0
-                assert on_edge(prev_vertex[0], prev_vertex[1])
-
-                if on_edge(knob.position[0], knob.position[1]):
-                    break
-
-        """
-        Calculate the normal vector and the direction of the joint
-        """
-        # get the normal vector
-        normal_vector = np.empty(2)
-        if detected_edge["horizontal"]:
-            normal_vector[0], normal_vector[1] = 0, 1
-        else:
-            normal_vector = np.array([1, - 1 / detected_edge["slope"]])
-            normal_vector_norm = np.linalg.norm(normal_vector, 2)
-            normal_vector = normal_vector / normal_vector_norm
-
-        assert -np.pi/2 < joint_angle and joint_angle < np.pi/2
-
-        directional_angle = np.arccos(normal_vector[0]) - joint_angle
-        directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
-
-        # raycast from knob to a set angle
-        input = b2RayCastInput(p1 = knob.position,
-                               p2 = np.array(knob.position) + directional_vector,
-                               maxFraction = joint_set_distance)
-        output = b2RayCastOutput()
+        input = self._raycast(origin_fixture = base_body.fixtures[0],
+                              origin_position = knob.position,
+                              raycast_relative_angle = joint_angle,
+                              raycast_distance = joint_set_distance)
 
         """
         Body Extension Generation/Detection -> Joint Generation
@@ -223,12 +160,13 @@ class SpringGeneration (Framework):
         spring_joint_anchor = None
         hit_once = False
         min_hit_distance = copy(joint_set_distance)
-        new_limb = True
+        new_limb_boolean = True
         for tmp_body in self.world.bodies:
             #####
             # Detect any collision between the ray and each body
             #####
             try:
+                output = b2RayCastOutput()
                 hit = tmp_body.fixtures[0].RayCast(output, input, 0)
                 if hit:
                     hit_once = True
@@ -249,9 +187,10 @@ class SpringGeneration (Framework):
             #####
             # Generate Body Extension and Connect Spring
             #####
+            limb_extension_position = input.p1 + (input.p2 - input.p1) * joint_set_distance
             limb_extension = self.world.CreateDynamicBody(
-                position = (base_body.position[0] + ext_pos_x,
-                            base_body.position[1] + ext_pos_y),
+                position = (limb_extension_position[0],
+                            limb_extension_position[1]),
                 fixtures = b2FixtureDef(density = 2.0,
                                         friction = 0.6,
                                         shape = b2PolygonShape(
@@ -259,10 +198,10 @@ class SpringGeneration (Framework):
                                             ),
                                         ),
             )
-            spring_joint_anchor = (limb_extension.worldCenter[0]
-                                       + ext_dim_x * ext_knob_x_ratio,
-                                   limb_extension.worldCenter[1]
-                                       + ext_dim_y * ext_knob_y_ratio)
+            # cast ray to determine joint endpoint
+            output = b2RayCastOutput()
+            limb_extension.fixtures[0].RayCast(output, input, 0)
+            spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
 
         assert limb_extension != None and spring_joint_anchor != None
 
@@ -291,7 +230,74 @@ class SpringGeneration (Framework):
             collideConnected = True
         )
 
-        return new_limb, limb_extension
+        return new_limb_boolean, limb_extension
+
+
+    def _raycast(self, origin_fixture, origin_position, raycast_relative_angle, raycast_distance):
+        """
+        Find out the edge that the knob is located on
+        """
+        # get normal of the knob position on base body
+        # get edge that the knob is located on -> manually calculate normal...
+        vertices = origin_fixture.shape.vertices
+        total_vertices = len(vertices)
+        detected_edge = {
+            "vertex 0": None,
+            "vertex 1": None,
+            "horizontal": False,
+            "slope": None,
+        }
+        for i, vertex in enumerate(vertices):
+            prev_vertex = vertices[(i - 1) % total_vertices]
+            detected_edge["vertex 0"] = prev_vertex
+            detected_edge["vertex 1"] = vertex
+
+            vertical = (vertex[0] - prev_vertex[0]) == 0
+            detected_edge["horizontal"] = (vertex[1] - prev_vertex[1]) == 0
+
+            border_condition = lambda x, y: \
+                x >= np.sort([vertex[0], prev_vertex[0]])[0] and \
+                x <= np.sort([vertex[0], prev_vertex[0]])[1] and \
+                y >= np.sort([vertex[1], prev_vertex[1]])[0] and \
+                y <= np.sort([vertex[1], prev_vertex[1]])[1]
+
+            if vertical:
+                if border_condition(origin_position[0], origin_position[1]):
+                    break # edge is on the vertical edge
+                pass
+
+            else:
+                slope = (vertex[1] - prev_vertex[1]) / (vertex[0] - prev_vertex[0])
+                detected_edge["slope"] = slope
+                # edge function with boundary conditions taken into account
+                on_edge = lambda x, y: slope * (x - vertex[0]) - (y - vertex[1]) == 0
+                assert on_edge(prev_vertex[0], prev_vertex[1])
+
+                if on_edge(origin_position[0], origin_position[1]):
+                    break
+
+        """
+        Calculate the normal vector and the direction of the joint
+        """
+        # get the normal vector
+        normal_vector = np.empty(2)
+        if detected_edge["horizontal"]:
+            normal_vector[0], normal_vector[1] = 0, 1
+        else:
+            normal_vector = np.array([1, - 1 / detected_edge["slope"]])
+            normal_vector_norm = np.linalg.norm(normal_vector, 2)
+            normal_vector = normal_vector / normal_vector_norm
+
+        assert -np.pi/2 < raycast_relative_angle and raycast_relative_angle < np.pi/2
+
+        directional_angle = np.arccos(normal_vector[0]) - raycast_relative_angle
+        directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
+
+        # raycast from knob to a set angle
+        input = b2RayCastInput(p1 = origin_position,
+                               p2 = np.array(origin_position) + directional_vector,
+                               maxFraction = raycast_distance)
+        return input
 
     def Keyboard(self, key):
         if key == Keys.K_g:
