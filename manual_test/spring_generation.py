@@ -27,15 +27,15 @@ class SpringGeneration (Framework):
                                     ),
         )
 
-        bodies_to_scan = [limb_base]
-
         # create base body
         # limb_base = self.world.CreateStaticBody(
-        #     position = (pos_x, pos_y),
+        #     position = (0, 0),
         #     # (5, 5) in all directions
         #     # dimension is (10, 10)
         #     shapes = b2PolygonShape(box = (dim_x, dim_y))
         # )
+
+        bodies_to_scan = [limb_base]
 
         # create external body (for collision test)
         # limb_extension = self.world.CreateDynamicBody(
@@ -49,10 +49,10 @@ class SpringGeneration (Framework):
         # )
 
         if morphogen_function == None:
-            self.generate_joint(limb_base, 0.99, 1)
-            self.generate_joint(limb_base, -0.99, 1)
+            self.generate_joint(limb_base, 0.90, 1)
+            self.generate_joint(limb_base, -0.90, 1)
 
-            # self.generate_joint(self.generate_joint(limb_base, 0.99, 1)[1], 0.99, 1)
+            self.generate_joint(self.generate_joint(limb_base, 0.80, 1)[1], 0.50, 1)
 
         else:
             """
@@ -109,10 +109,10 @@ class SpringGeneration (Framework):
             joint_angle = np.pi/4,                  # angle of the prismatic joint
             joint_set_distance = 20,                # how far the prismatic joint goes
             # body extension...
-            ext_dim_x = 5, ext_dim_y = 5,                       # new body's dimensions
-            ext_angle = 0,                                      # new body's rotation
+            ext_dim_x = 5, ext_dim_y = 5,           # new body's dimensions
+            ext_angle = 0,                          # new body's rotation
             # prismatic-distance joint settings
-            prismatic_translation_low = -np.inf, prismatic_translation_high = 5,
+            prismatic_translation_low = -np.inf, prismatic_translation_high = 20,
             ):
 
         """
@@ -164,22 +164,24 @@ class SpringGeneration (Framework):
         for tmp_body in self.world.bodies:
             #####
             # Detect any collision between the ray and each body
+            # UNLESS it is a circle (joint)
             #####
             try:
                 output = b2RayCastOutput()
-                hit = tmp_body.fixtures[0].RayCast(output, input, 0)
-                if hit:
-                    hit_once = True
-                    hit_distance = output.fraction * (input.p2 - input.p1)
-                    hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
-                    if hit_distance < min_hit_distance:
-                        print("lower_hit_distance")
-                        min_hit_distance = hit_distance
-                        limb_extension = tmp_body
-                        spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
-                        new_limb = False
-                        print(tmp_body)           # debugging
-                        print(hit_point, min_hit_distance)
+                if type(tmp_body.fixtures[0].shape) is not b2CircleShape:
+                        hit = tmp_body.fixtures[0].RayCast(output, input, 0)
+                        if hit:
+                            hit_once = True
+                            hit_distance = output.fraction * (input.p2 - input.p1)
+                            hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
+                            if hit_distance < min_hit_distance:
+                                print("lower_hit_distance")
+                                min_hit_distance = hit_distance
+                                limb_extension = tmp_body
+                                spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
+                                new_limb = False
+                                print(tmp_body)           # debugging
+                                print(hit_point, min_hit_distance)
             except:
                 pass
 
@@ -308,7 +310,7 @@ class SpringGeneration (Framework):
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
 
-        # print(len(self.world.contacts))
+        print(len(self.world.contacts))
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),
