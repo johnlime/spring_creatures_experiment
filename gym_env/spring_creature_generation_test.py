@@ -7,7 +7,7 @@ from math import sin, pi, sqrt
 import numpy as np
 from copy import copy, deepcopy
 
-from box2d_func import *
+from gym_env.box2d_func import *
 from manual_test.settings import default_settings
 
 class SpringCreatureGenerationTest(gym.Env):

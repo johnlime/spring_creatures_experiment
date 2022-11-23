@@ -1,5 +1,5 @@
 from Box2D import *
-
+import numpy as np
 def spring_creature_generation(box2d_world, dim_x, dim_y, box2d_settings,
                                morphogen_function = None):
     """
