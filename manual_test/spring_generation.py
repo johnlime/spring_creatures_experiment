@@ -71,7 +71,7 @@ class SpringGeneration (Framework):
                             body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
                             ])
                         if genome[0]: # should dictate whether to generate genome or not
-                            new_limb, limb_reference = generate_joint(body, genome)
+                            new_limb, limb_reference = self.generate_joint(body, genome)
                             if new_limb:
                                 bodies_to_scan.append(limb_reference)
                 bodies_to_scan.pop(0)

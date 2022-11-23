@@ -1,23 +1,42 @@
 import gym
 from gym import spaces
+from Box2D import *
 import pygame
 
 from math import sin, pi, sqrt
 import numpy as np
 from copy import copy, deepcopy
 
+from box2d_func import *
+from manual_test.settings import default_settings
+
 class SpringCreatureGenerationTest(gym.Env):
-    """
-    Generate spring creature limbs recursively
-    """
     name = "SpringCreatureGenerationTest"
-    description = 'g to stop/go'
+    description = 'SpringCreatureGenerationTest'
     count = 800
-    def __init__(self):
-        self.action_space
-        self.observation_space
+
+    def __init__(self, morphogen_function = None):
+        self.action_space = Discrete(1) # no action space
+        self.observation_space = Box(low = -np.inf,
+                                     high = np.inf,
+                                     shape = (1,),
+                                     dtype = np.float32)
+
+        self.world = b2World(gravity=(0, 0), doSleep = True)
+        dim_x, dim_y = 5, 5
+        assert dim_x > 0 and dim_y > 0
+
+        spring_creature_generation(self.world,
+                                   dim_x, dim_y,
+                                   default_settings,
+                                   morphogen_function)
+
+        self.go = False
+        self.time = 0.0
 
     def _get_obs(self):
+        obs = self.observation_space.sample() # this will be changed later
+
         assert self.observation_space.contains(obs)
         return obs
 

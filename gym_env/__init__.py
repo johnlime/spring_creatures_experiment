@@ -1,4 +1,6 @@
 from gym_env.spring_creature_generation_test import SpringCreatureGenerationTest
+from gym_env.box2d_func import *
+
 import gym
 
 gym.envs.register(
