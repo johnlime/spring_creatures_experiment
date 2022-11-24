@@ -8,7 +8,6 @@ import numpy as np
 from copy import copy, deepcopy
 
 from gym_env.box2d_func import *
-from manual_test.settings import default_settings
 
 class SpringCreatureGenerationTest(gym.Env):
     name = "SpringCreatureGenerationTest"
@@ -16,11 +15,11 @@ class SpringCreatureGenerationTest(gym.Env):
     count = 800
 
     def __init__(self, morphogen_function = None):
-        self.action_space = Discrete(1) # no action space
-        self.observation_space = Box(low = -np.inf,
-                                     high = np.inf,
-                                     shape = (1,),
-                                     dtype = np.float32)
+        self.action_space = spaces.Discrete(1) # no action space
+        self.observation_space = spaces.Box(low = -np.inf,
+                                            high = np.inf,
+                                            shape = (1,),
+                                            dtype = np.float32)
 
         self.world = b2World(gravity=(0, 0), doSleep = True)
         dim_x, dim_y = 5, 5
@@ -28,7 +27,6 @@ class SpringCreatureGenerationTest(gym.Env):
 
         spring_creature_generation(self.world,
                                    dim_x, dim_y,
-                                   default_settings,
                                    morphogen_function)
 
         self.go = False
@@ -53,7 +51,8 @@ class SpringCreatureGenerationTest(gym.Env):
         reward = 0
         done = True
         info = {}
-        return obs, reward, done, False, info # there is an optional truncated segment
+        return obs, reward, done, info
+        # return obs, reward, done, False, info # there is an optional truncated segment
 
     def render(self):
         if self.render_mode == "rgb_array":
@@ -71,6 +70,9 @@ class SpringCreatureGenerationTest(gym.Env):
         canvas.fill((255, 255, 255))
 
     def close(self):
-        if self.window is not None:
-            pygame.display.quit()
-            pygame.quit()
+        try:
+            if self.window is not None:
+                pygame.display.quit()
+                pygame.quit()
+        except:
+            pass

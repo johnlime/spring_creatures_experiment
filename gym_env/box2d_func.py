@@ -1,6 +1,12 @@
 from Box2D import *
 import numpy as np
-def spring_creature_generation(box2d_world, dim_x, dim_y, box2d_settings,
+from copy import *
+
+TIMESTEP = 1.0 / 60
+VEL_ITERS = 6
+POS_ITERS = 2
+
+def spring_creature_generation(box2d_world, dim_x, dim_y,
                                morphogen_function = None):
     """
     Generate spring creature limbs recursively
@@ -19,7 +25,13 @@ def spring_creature_generation(box2d_world, dim_x, dim_y, box2d_settings,
         # generate_joint(box2d_world, limb_base, 0.90, 1)
         # generate_joint(box2d_world, limb_base, -0.90, 1)
 
-        generate_joint(generate_joint(box2d_world, limb_base, 0.80, 1)[1], 0.50, 1)
+        generate_joint(box2d_world,
+                       generate_joint(box2d_world,
+                                      limb_base,
+                                      0.80,
+                                      1)[1],
+                       0.50,
+                       1)
 
     else:
         """
@@ -47,7 +59,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y, box2d_settings,
     """
     Body Aggregation (After body generation, to save processing time)
     """
-    box2d_world.Step(box2d_settings) # collision or overlap are only detected during simulation step
+    box2d_world.Step(TIMESTEP, VEL_ITERS, POS_ITERS) # collision or overlap are only detected during simulation step
     for i, contact in enumerate(box2d_world.contacts):
         worldManifold = b2WorldManifold()
         worldManifold.Initialize(contact.manifold,
@@ -113,8 +125,7 @@ def generate_joint(box2d_world, base_body,
         enableLimit = True
     )
 
-    input = raycast(box2d_world,
-                    origin_fixture = base_body.fixtures[0],
+    input = raycast(origin_fixture = base_body.fixtures[0],
                     origin_position = knob.position,
                     raycast_relative_angle = joint_angle,
                     raycast_distance = joint_set_distance)

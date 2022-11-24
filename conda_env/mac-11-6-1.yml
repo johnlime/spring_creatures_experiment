@@ -1,0 +1,38 @@
+name: spring_creatures
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - box2d-py=2.3.8=py310h7a76584_7
+  - bzip2=1.0.8=h0d85af4_4
+  - ca-certificates=2022.9.24=h033912b_0
+  - cloudpickle=2.2.0=pyhd8ed1ab_0
+  - gym=0.21.0=py310ha188af9_2
+  - libblas=3.9.0=16_osx64_openblas
+  - libcblas=3.9.0=16_osx64_openblas
+  - libcxx=14.0.6=hccf4f1f_0
+  - libffi=3.4.2=h0d85af4_5
+  - libgfortran=5.0.0=10_4_0_h97931a8_25
+  - libgfortran5=11.3.0=h082f757_25
+  - liblapack=3.9.0=16_osx64_openblas
+  - libopenblas=0.3.21=openmp_h429af6e_3
+  - libsqlite=3.39.4=ha978bb4_0
+  - libzlib=1.2.12=hfd90126_4
+  - llvm-openmp=14.0.4=ha654fa7_0
+  - ncurses=6.3=h96cf925_1
+  - numpy=1.23.3=py310h1b7c290_0
+  - openssl=3.0.7=hfd90126_0
+  - pip=22.2.2=pyhd8ed1ab_0
+  - python=3.10.6=hc14f532_0_cpython
+  - python_abi=3.10=2_cp310
+  - readline=8.1.2=h3899abd_0
+  - setuptools=65.4.1=pyhd8ed1ab_0
+  - tk=8.6.12=h5dbffcc_0
+  - tzdata=2022d=h191b570_0
+  - wheel=0.37.1=pyhd8ed1ab_0
+  - xz=5.2.6=h775f41a_0
+  - pip:
+    - munch==2.5.0
+    - pygame==2.1.2
+    - six==1.16.0
+prefix: /Users/johnlime/anaconda3/envs/spring_creatures
