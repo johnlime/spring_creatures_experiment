@@ -5,7 +5,6 @@ import pygame
 
 from math import sin, pi, sqrt
 import numpy as np
-from copy import copy, deepcopy
 
 from gym_env.box2d_func import *
 
@@ -13,6 +12,7 @@ class SpringCreatureGenerationTest(gym.Env):
     name = "SpringCreatureGenerationTest"
     description = 'SpringCreatureGenerationTest'
     count = 800
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
 
     def __init__(self, morphogen_function = None):
         self.action_space = spaces.Discrete(1) # no action space
@@ -31,6 +31,14 @@ class SpringCreatureGenerationTest(gym.Env):
 
         self.go = False
         self.time = 0.0
+
+        # rendering
+        assert render_mode is None or \
+            render_mode in self.metadata["render_modes"]
+        self.render_mode = render_mode
+        self.window = None
+        self.clock = None
+        self.window_size = 512  # The size of the PyGame window
 
     def _get_obs(self):
         obs = self.observation_space.sample() # this will be changed later
@@ -69,10 +77,25 @@ class SpringCreatureGenerationTest(gym.Env):
         canvas = pygame.Surface((self.window_size, self.window_size))
         canvas.fill((255, 255, 255))
 
+        """
+        Insert render items here
+        """
+
+        if self.render_mode == "human":
+            # The following line copies our drawings from `canvas` to the visible window
+            self.window.blit(canvas, canvas.get_rect())
+            pygame.event.pump()
+            pygame.display.update()
+
+            # We need to ensure that human-rendering occurs at the predefined framerate.
+            # The following line will automatically add a delay to keep the framerate stable.
+            self.clock.tick(self.metadata["render_fps"])
+        else:  # rgb_array
+            return np.transpose(
+                np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
+            )
+
     def close(self):
-        try:
-            if self.window is not None:
-                pygame.display.quit()
-                pygame.quit()
-        except:
-            pass
+        if self.window is not None:
+            pygame.display.quit()
+            pygame.quit()
