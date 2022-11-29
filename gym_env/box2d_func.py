@@ -41,18 +41,35 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
             body = bodies_to_scan[0]
             knob_x_ratio = 0
             knob_y_ratio = 0
-            for x in 0.1 * range(1, 10):
+            for x in range(1, 10):
                 knob_x_ratio = 0.1 * x
-                for y in range(1, 10):
-                    knob_y_ratio = 0.1 * y
-                    genome = morphogen_function([
-                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
-                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
-                        ])
-                    if genome[0]: # should dictate whether to generate genome or not
-                        new_limb, limb_reference = generate_joint(box2d_world, body, genome)
-                        if new_limb:
-                            bodies_to_scan.append(limb_reference)
+                genome = morphogen_function([
+                    body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
+                    body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
+                    ])
+                if genome[0]: # should dictate whether to generate genome or not
+                    new_limb, limb_reference = generate_joint_from_genome(box2d_world,
+                                                                          body,
+                                                                          knob_x_ratio,
+                                                                          1,
+                                                                          genome)
+                    if new_limb:
+                        bodies_to_scan.append(limb_reference)
+
+            for y in range(1, 10):
+                knob_y_ratio = 0.1 * y
+                genome = morphogen_function([
+                    body.position[0] + body.fixtures[0].shape.vertices[0][0] * 1,
+                    body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
+                    ])
+                if genome[0]: # should dictate whether to generate genome or not
+                    new_limb, limb_reference = generate_joint_from_genome(box2d_world,
+                                                                          body,
+                                                                          1,
+                                                                          knob_y_ratio,
+                                                                          genome)
+                    if new_limb:
+                        bodies_to_scan.append(limb_reference)
             bodies_to_scan.pop(0)
 
 
@@ -79,6 +96,22 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
             )
         print(points)
 
+
+def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
+    """
+    Genome
+    0: Whether to generate the genome or not
+    1: Joint angle (- np.pi, np.pi)
+    2: Joint distance
+    """
+    return generate_joint(box2d_world, base_body,
+                          knob_x_ratio, knob_y_ratio,
+                          joint_angle = genome[1],
+                          joint_set_distance = genome[2],
+                          ext_dim_x = genome[3],
+                          ext_dim_y = genome[4],
+                          prismatic_translation_high = genome[3]
+                          )
 
 def generate_joint(box2d_world, base_body,
         # joint extension...
