@@ -23,6 +23,7 @@ dependencies:
   - numpy=1.23.3=py310h1b7c290_0
   - openssl=3.0.7=hfd90126_0
   - pip=22.2.2=pyhd8ed1ab_0
+  - pybox2d=2.3.10=py310h7a76584_4
   - python=3.10.6=hc14f532_0_cpython
   - python_abi=3.10=2_cp310
   - readline=8.1.2=h3899abd_0

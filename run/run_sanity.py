@@ -4,9 +4,9 @@ import gym
 env = SpringCreatureGenerationTest()
 
 obs = env.reset()
-for _ in range(80):
+for _ in range(1000):
         actions = env.action_space.sample()
         obs, reward, done, info = env.step(actions)
-        # env.render()
+        env.render()
 
 env.close()

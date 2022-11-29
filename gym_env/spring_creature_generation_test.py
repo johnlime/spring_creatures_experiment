@@ -3,8 +3,9 @@ from gym import spaces
 from Box2D import *
 import pygame
 
-from math import sin, pi, sqrt
+from math import sin, cos, pi, sqrt
 import numpy as np
+from copy import deepcopy
 
 from gym_env.box2d_func import *
 
@@ -14,7 +15,7 @@ class SpringCreatureGenerationTest(gym.Env):
     count = 800
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
 
-    def __init__(self, morphogen_function = None):
+    def __init__(self, morphogen_function = None, render_mode = "human"):
         self.action_space = spaces.Discrete(1) # no action space
         self.observation_space = spaces.Box(low = -np.inf,
                                             high = np.inf,
@@ -28,7 +29,6 @@ class SpringCreatureGenerationTest(gym.Env):
         spring_creature_generation(self.world,
                                    dim_x, dim_y,
                                    morphogen_function)
-
         self.go = False
         self.time = 0.0
 
@@ -39,6 +39,7 @@ class SpringCreatureGenerationTest(gym.Env):
         self.window = None
         self.clock = None
         self.window_size = 512  # The size of the PyGame window
+        self.scale = 2
 
     def _get_obs(self):
         obs = self.observation_space.sample() # this will be changed later
@@ -63,10 +64,9 @@ class SpringCreatureGenerationTest(gym.Env):
         # return obs, reward, done, False, info # there is an optional truncated segment
 
     def render(self):
-        if self.render_mode == "rgb_array":
-            return self._render_frame()
-
-    def _render_frame(self):
+        ####
+        # Generate window and clock
+        ####
         if self.window is None and self.render_mode == "human":
             pygame.init()
             pygame.display.init()
@@ -77,10 +77,68 @@ class SpringCreatureGenerationTest(gym.Env):
         canvas = pygame.Surface((self.window_size, self.window_size))
         canvas.fill((255, 255, 255))
 
-        """
-        Insert render items here
-        """
+        ####
+        # Render items here
+        ####
+        for body in self.world.bodies:
+            for fixture in body.fixtures:
+                if type(fixture.shape) == b2PolygonShape:
+                    fixture_vertices = []
+                    # rotate + translate vertices
+                    for i in range(len(fixture.shape.vertices)):
+                        x = fixture.shape.vertices[i][0] * cos(body.angle) - \
+                            fixture.shape.vertices[i][1] * sin(body.angle) + \
+                            body.position[0]
 
+                        y = fixture.shape.vertices[i][0] * sin(body.angle) - \
+                            fixture.shape.vertices[i][1] * cos(body.angle) + \
+                            body.position[1]
+
+                        x = self.scale * x + self.window_size // 2 # half the window size
+                        y = -self.scale * y + self.window_size // 2
+
+                        fixture_vertices.append(tuple((x, y)))
+
+                    pygame.draw.polygon(
+                        surface = canvas,
+                        color = (0, 255, 150),
+                        points = fixture_vertices,
+                    )
+
+                elif type(fixture.shape) == b2CircleShape:
+                    pygame.draw.circle(
+                        surface = canvas,
+                        color = (0, 0, 255),
+                        center = (self.scale * (body.position[0] + fixture.shape.pos[0]) + \
+                                    self.window_size // 2,
+                                  - self.scale * (body.position[1] + fixture.shape.pos[1]) + \
+                                    self.window_size // 2),
+                        radius = self.scale * fixture.shape.radius
+                    )
+                else:
+                    pass
+
+        for joint in self.world.joints:
+            if type(joint) == b2DistanceJoint:
+                anchor_a = (self.scale * joint.anchorA[0] + \
+                                self.window_size // 2,
+                            - self.scale * joint.anchorA[1] + \
+                                self.window_size // 2)
+                anchor_b = (self.scale * joint.anchorB[0] + \
+                                self.window_size // 2,
+                            - self.scale * joint.anchorB[1] + \
+                                self.window_size // 2)
+                pygame.draw.line(
+                    surface = canvas,
+                    color = (255, 0, 0),
+                    start_pos = anchor_a,
+                    end_pos = anchor_b
+                )
+
+
+        ####
+        # Display in a window or return an rgb array
+        ####
         if self.render_mode == "human":
             # The following line copies our drawings from `canvas` to the visible window
             self.window.blit(canvas, canvas.get_rect())
@@ -90,7 +148,7 @@ class SpringCreatureGenerationTest(gym.Env):
             # We need to ensure that human-rendering occurs at the predefined framerate.
             # The following line will automatically add a delay to keep the framerate stable.
             self.clock.tick(self.metadata["render_fps"])
-        else:  # rgb_array
+        else:  # if self.render_mode == "rgb_array":
             return np.transpose(
                 np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
             )

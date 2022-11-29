@@ -310,7 +310,10 @@ class SpringGeneration (Framework):
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
 
-        print(len(self.world.contacts))
+        # print(len(self.world.contacts))
+        # for body in self.world.bodies:
+        #     for fixture in body.fixtures:
+        #         print(fixture)
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),
