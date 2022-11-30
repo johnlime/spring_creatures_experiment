@@ -58,25 +58,40 @@ class SpringGeneration (Framework):
             """
             Recursively generate positions for morphogen functions (CPPN) to generate limbs from
             """
-            ### this is a sketch and probably doen't work
-            pass
-            # while len(bodies_to_scan) != 0:
-            #     body = bodies_to_scan[0]
-            #     knob_x_ratio = 0
-            #     knob_y_ratio = 0
-            #     for x in range(1, 10):
-            #         knob_x_ratio = 0.1 * x
-            #         for y in range(1, 10):
-            #             knob_y_ratio = 0.1 * y
-            #             genome = morphogen_function([
-            #                 body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
-            #                 body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
-            #                 ])
-            #             if genome[0]: # should dictate whether to generate genome or not
-            #                 new_limb, limb_reference = self.generate_joint(body, genome)
-            #                 if new_limb:
-            #                     bodies_to_scan.append(limb_reference)
-            #     bodies_to_scan.pop(0)
+            while len(bodies_to_scan) != 0:
+                body = bodies_to_scan[0]
+                knob_x_ratio = 0
+                knob_y_ratio = 0
+                for x in range(1, 10):
+                    knob_x_ratio = 0.1 * x
+                    genome = morphogen_function([
+                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
+                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
+                        ])
+                    if genome[0]: # should dictate whether to generate genome or not
+                        new_limb, limb_reference = generate_joint_from_genome(box2d_world,
+                                                                              body,
+                                                                              knob_x_ratio,
+                                                                              1,
+                                                                              genome)
+                        if new_limb:
+                            bodies_to_scan.append(limb_reference)
+
+                for y in range(1, 10):
+                    knob_y_ratio = 0.1 * y
+                    genome = morphogen_function([
+                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * 1,
+                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
+                        ])
+                    if genome[0]: # should dictate whether to generate genome or not
+                        new_limb, limb_reference = generate_joint_from_genome(box2d_world,
+                                                                              body,
+                                                                              1,
+                                                                              knob_y_ratio,
+                                                                              genome)
+                        if new_limb:
+                            bodies_to_scan.append(limb_reference)
+                bodies_to_scan.pop(0)
 
 
         """
