@@ -120,6 +120,22 @@ class SpringGeneration (Framework):
         self.go = False
         self.time = 0.0
 
+    def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
+        """
+        Genome
+        0: Whether to generate the genome or not
+        1: Joint angle (- np.pi, np.pi)
+        2: Joint distance
+        """
+        return generate_joint(box2d_world, base_body,
+                              knob_x_ratio, knob_y_ratio,
+                              joint_angle = genome[1],
+                              joint_set_distance = genome[2],
+                              ext_dim_x = genome[3],
+                              ext_dim_y = genome[4],
+                              prismatic_translation_high = genome[3]
+                              )
+
     def generate_joint(self, base_body,
             # joint extension...
             knob_x_ratio = 1, knob_y_ratio = 1,     # joint node location
