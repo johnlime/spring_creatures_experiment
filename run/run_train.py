@@ -22,9 +22,78 @@ from pureples.es_hyperneat.es_hyperneat import ESNetwork
 from pureples.shared.visualize import draw_net
 from pureples.shared.substrate import Substrate
 
-from neat_gym import _gym_make, _is_discrete, eval_net
+# from neat_gym import _gym_make, _is_discrete, eval_net
 from neat_gym.novelty import Novelty
 from gym_env import SpringCreatureGenerationTest
+
+def eval_net(
+        net,
+        env,
+        render=False,
+        report=False,
+        record_dir=None,
+        activations=1,
+        seed=None,
+        max_episode_steps=None,
+        csvfilename=None):
+    '''
+    Evaluates a network
+    @param net the network
+    @param env the Gym environment
+    @param render set to True for rendering
+    @param record_dir set to directory name for recording video
+    @param activations number of times to repeat
+    @param seed seed for random number generator
+    @param csvfilename name of CSV file for saving trajectory
+    @return total reward
+    '''
+
+    if record_dir is not None:
+        env = wrappers.Monitor(env, record_dir, force=True)
+
+    # env.seed(seed)
+    state = env.reset()
+    total_reward = 0
+    steps = 0
+
+    csvfile = None
+
+    if csvfilename is not None:
+
+        csvfile = open(csvfilename, 'w')
+
+    while max_episode_steps is None or steps < max_episode_steps:
+
+        state, reward, done, _ = env.step()
+
+        if csvfile is not None:
+
+            fmt = ('%f,' * len(action))
+            csvfile.write(fmt % tuple(action))
+
+            fmt = ('%f,' * len(state))[:-1] + '\n'
+            csvfile.write(fmt % tuple(state))
+
+        if render or (record_dir is not None):
+            env.render()
+            time.sleep(.02)
+
+        total_reward += reward
+
+        if done:
+            break
+
+        steps += 1
+
+    if csvfile is not None:
+        csvfile.close()
+
+    env.close()
+
+    if report:
+        print('Got reward %+6.6f in %d steps' % (total_reward, steps))
+
+    return total_reward, steps
 
 class _GymNeatConfig(object):
     '''
@@ -92,16 +161,10 @@ class _GymNeatConfig(object):
         env_name = SpringCreatureGenerationTest
         self.reps = int(gympar['episode_reps'])
 
-        # Make gym environment form name in command-line arguments
-        env = _gym_make(SpringCreatureGenerationTest)
-
         # Get input/output layout from environment, or from layout for Hyper
         if layout is None:
-            num_inputs = env.observation_space.shape[0]
-            if _is_discrete(env):
-                num_outputs = env.action_space.n
-            else:
-                num_outputs = env.action_space.shape[0]
+            num_inputs = 2
+            num_outputs = 4
         else:
             num_inputs, num_outputs = layout
 
@@ -147,7 +210,7 @@ class _GymNeatConfig(object):
         self.max_episode_steps = env.spec.max_episode_steps
 
         # Store environment for later
-        self.env = env
+        # self.env = env
 
         # Track evaluations
         self.current_evaluations = 0
@@ -177,10 +240,19 @@ class _GymNeatConfig(object):
         reward_sum = 0
         total_steps = 0
 
+        # Support recurrent nets
+        def morphogen_cppn(input):
+            for k in range(self.activations):
+                output = net.activate(input)    # continuous action only
+            return output
+
+        # Properly initialize environment
+        env = self.env_name(net)
+
         for _ in range(self.reps):
 
             reward, steps = eval_net(net,
-                                     self.env,
+                                     env,
                                      activations=self.activations,
                                      seed=self.seed,
                                      max_episode_steps=self.max_episode_steps)
@@ -212,27 +284,24 @@ class _GymNeatConfig(object):
 
     def eval_net_novelty(self, net, genome):
 
-        env = self.env
+        # Support recurrent nets
+        def morphogen_cppn(input):
+            for k in range(self.activations):
+                output = net.activate(input)    # continuous action only
+            return output
+
+        # Properly initialize environment
+        env = self.env_name(morphogen_cppn)
+
         env.seed(self.seed)
         state = env.reset()
         steps = 0
-
-        is_discrete = _is_discrete(env)
 
         total_reward = 0
 
         while steps < self.max_episode_steps:
 
-            # Support recurrent nets
-            for k in range(self.activations):
-                action = net.activate(state)
-
-            # Support both discrete and continuous actions
-            action = (np.argmax(action)
-                      if is_discrete
-                      else action * env.action_space.high)
-
-            state, reward, done, info = env.step(action)
+            state, reward, done, info = env.step() #(action)
 
             behavior = info['behavior']
 

@@ -48,7 +48,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                     body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
                     body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
                     ])
-                if genome[0]: # should dictate whether to generate genome or not
+                if genome[0] > 0: # should dictate whether to generate genome or not
                     new_limb, limb_reference = generate_joint_from_genome(box2d_world,
                                                                           body,
                                                                           knob_x_ratio,
