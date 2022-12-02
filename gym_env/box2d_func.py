@@ -1,6 +1,7 @@
 from Box2D import *
 import numpy as np
 from copy import *
+from math import sqrt
 
 TIMESTEP = 1.0 / 60
 VEL_ITERS = 6
@@ -22,8 +23,8 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
     bodies_to_scan = [limb_base]
 
     if morphogen_function == None:
-        # generate_joint(box2d_world, limb_base, 0.90, 1)
-        # generate_joint(box2d_world, limb_base, -0.90, 1)
+        generate_joint(box2d_world, limb_base, 0.90, 1)
+        generate_joint(box2d_world, limb_base, -0.90, 1)
 
         generate_joint(box2d_world,
                        generate_joint(box2d_world,
@@ -78,23 +79,25 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
     """
     box2d_world.Step(TIMESTEP, VEL_ITERS, POS_ITERS) # collision or overlap are only detected during simulation step
     for i, contact in enumerate(box2d_world.contacts):
-        worldManifold = b2WorldManifold()
-        worldManifold.Initialize(contact.manifold,
-                                 contact.fixtureA.body.transform,
-                                 contact.fixtureA.shape.radius,
-                                 contact.fixtureB.body.transform,
-                                 contact.fixtureB.shape.radius)
-        points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
-        for point in points:
-            box2d_world.CreateRevoluteJoint(
-                bodyA = contact.fixtureA.body,
-                bodyB = contact.fixtureB.body,
-                anchor = point,
-                lowerAngle = 0,
-                upperAngle = 0,
-                enableLimit = True
-            )
-        print(points)
+        if type(contact.fixtureA.shape) == b2PolygonShape and \
+            type(contact.fixtureB.shape) == b2PolygonShape:
+            worldManifold = b2WorldManifold()
+            worldManifold.Initialize(contact.manifold,
+                                     contact.fixtureA.body.transform,
+                                     contact.fixtureA.shape.radius,
+                                     contact.fixtureB.body.transform,
+                                     contact.fixtureB.shape.radius)
+            points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
+            for point in points:
+                box2d_world.CreateRevoluteJoint(
+                    bodyA = contact.fixtureA.body,
+                    bodyB = contact.fixtureB.body,
+                    anchor = point,
+                    lowerAngle = 0,
+                    upperAngle = 0,
+                    enableLimit = True
+                )
+            # print(points)
 
 
 def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
@@ -185,13 +188,13 @@ def generate_joint(box2d_world, base_body,
                         hit_distance = output.fraction * (input.p2 - input.p1)
                         hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
                         if hit_distance < min_hit_distance:
-                            print("lower_hit_distance")
+                            # print("lower_hit_distance")
                             min_hit_distance = hit_distance
                             limb_extension = tmp_body
                             spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                             new_limb = False
-                            print(tmp_body)           # debugging
-                            print(hit_point, min_hit_distance)
+                            # print(tmp_body)           # debugging
+                            # print(hit_point, min_hit_distance)
         except:
             pass
 

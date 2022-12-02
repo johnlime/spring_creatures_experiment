@@ -99,23 +99,26 @@ class SpringGeneration (Framework):
         """
         Framework.Step(self, default_settings)      # collision or overlap are only detected simulation step
         for i, contact in enumerate(self.world.contacts):
-            worldManifold = b2WorldManifold()
-            worldManifold.Initialize(contact.manifold,
-                                     contact.fixtureA.body.transform,
-                                     contact.fixtureA.shape.radius,
-                                     contact.fixtureB.body.transform,
-                                     contact.fixtureB.shape.radius)
-            points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
-            for point in points:
-                self.world.CreateRevoluteJoint(
-                    bodyA = contact.fixtureA.body,
-                    bodyB = contact.fixtureB.body,
-                    anchor = point,
-                    lowerAngle = 0,
-                    upperAngle = 0,
-                    enableLimit = True
-                )
-            print(points)
+            if type(contact.fixtureA.shape) == b2PolygonShape and \
+                type(contact.fixtureB.shape) == b2PolygonShape:
+                worldManifold = b2WorldManifold()
+                worldManifold.Initialize(contact.manifold,
+                                         contact.fixtureA.body.transform,
+                                         contact.fixtureA.shape.radius,
+                                         contact.fixtureB.body.transform,
+                                         contact.fixtureB.shape.radius)
+                points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
+                # print(points)
+
+                for point in points:
+                    self.world.CreateRevoluteJoint(
+                        bodyA = contact.fixtureA.body,
+                        bodyB = contact.fixtureB.body,
+                        anchor = point,
+                        lowerAngle = 0,
+                        upperAngle = 0,
+                        enableLimit = True
+                    )
 
         self.go = False
         self.time = 0.0
@@ -208,15 +211,15 @@ class SpringGeneration (Framework):
                             hit_distance = output.fraction * (input.p2 - input.p1)
                             hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
                             if hit_distance < min_hit_distance:
-                                print("lower_hit_distance")
+                                # print("lower_hit_distance")
                                 min_hit_distance = hit_distance
                                 limb_extension = tmp_body
                                 spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                                 new_limb = False
-                                print(tmp_body)           # debugging
-                                print(hit_point, min_hit_distance)
+                                # print(tmp_body)           # debugging
+                                # print(hit_point, min_hit_distance)
             except:
-                pass
+                print(tmp_body)
 
         if not hit_once:
             #####
