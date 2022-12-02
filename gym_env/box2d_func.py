@@ -104,16 +104,22 @@ def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_rati
     """
     Genome
     0: Whether to generate the genome or not
-    1: Joint angle (- np.pi, np.pi)
+    1: Joint angle [- np.pi, np.pi]
     2: Joint distance
+    3, 4: New body's dimensions
     """
+    if genome[1] > np.pi:
+        genome[1] = np.pi
+    elif genome[1] < -np.pi:
+        genome[1] = -np.pi
+
     return generate_joint(box2d_world, base_body,
                           knob_x_ratio, knob_y_ratio,
                           joint_angle = genome[1],
                           joint_set_distance = genome[2],
                           ext_dim_x = genome[3],
                           ext_dim_y = genome[4],
-                          prismatic_translation_high = genome[3]
+                          prismatic_translation_high = genome[2]
                           )
 
 def generate_joint(box2d_world, base_body,
