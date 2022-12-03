@@ -123,6 +123,9 @@ class SpringGeneration (Framework):
         self.go = False
         self.time = 0.0
 
+        self.cycle = 100.0
+        self.cycle_time = 0.0
+
     def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
         """
         Genome
@@ -252,21 +255,22 @@ class SpringGeneration (Framework):
             lowerTranslation = prismatic_translation_low,
             upperTranslation = prismatic_translation_high,
             enableLimit = True,
-            #motorForce = 1.0, #(Doesn't work)
+            #motorForce = 1.0, #(Doesn't work),
+            maxMotorForce = 10 ** 4,
             motorSpeed = 0.0,
             enableMotor = True,
         )
 
-        distance_joint = self.world.CreateDistanceJoint(
-            bodyA = knob,
-            bodyB = limb_extension,
-            anchorA = knob.worldCenter,
-            anchorB = spring_joint_anchor,
-            # oscillations per second (for evey oscillator with 0 damping ratio)
-            frequencyHz = 2.0,
-            dampingRatio = 0.1,
-            collideConnected = True
-        )
+        # distance_joint = self.world.CreateDistanceJoint(
+        #     bodyA = knob,
+        #     bodyB = limb_extension,
+        #     anchorA = knob.worldCenter,
+        #     anchorB = spring_joint_anchor,
+        #     # oscillations per second (for evey oscillator with 0 damping ratio)
+        #     frequencyHz = 2.0,
+        #     dampingRatio = 0.1,
+        #     collideConnected = True
+        # )
 
         return new_limb_boolean, limb_extension
 
@@ -342,6 +346,15 @@ class SpringGeneration (Framework):
             self.go = not self.go
 
     def Step(self, settings = default_settings):
+        self.cycle_time += 1
+        if self.cycle_time >= self.cycle:
+            self.cycle_time = 0.0
+
+        for joint in self.world.joints:
+            if type(joint) == b2PrismaticJoint:
+                joint.motorSpeed = 30 * sin(2 * pi * self.cycle_time / self.cycle)
+
+
         Framework.Step(self, settings)
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
