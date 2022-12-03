@@ -7,7 +7,7 @@ no_fitness_termination = False
 generations            = 100
 
 [Gym]
-environment = SpringCreatureGenerationTest
+environment = SpringCreatureGenerationTest-v0
 episode_reps = 10
 
 [Substrate]
