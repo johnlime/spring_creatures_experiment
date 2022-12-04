@@ -3,7 +3,7 @@ from gym import spaces
 from Box2D import *
 import pygame
 
-from math import sin, cos, pi, sqrt
+from math import sin, pi, isnan
 import numpy as np
 
 from gym_env.box2d_func import *
@@ -49,8 +49,6 @@ class SpringCreatureLocomotion(gym.Env):
 
     def _get_obs(self):
         obs = [self.base_body.position[0], self.base_body.position[1]]
-        if not self.observation_space.contains(obs):
-            print(self.base_body)
         assert self.observation_space.contains(obs)
         return obs
 
@@ -75,6 +73,8 @@ class SpringCreatureLocomotion(gym.Env):
                 joint.motorSpeed = 30 * sin(2 * pi * self.cycle_time / self.cycle)
 
         self.world.Step(TIMESTEP, VEL_ITERS, POS_ITERS)
+        if isnan(self.base_body.popsition[0]) or isnan(self.base_body.popsition[1]):
+            print("updated base body is nan", self.base_body)
         obs = self._get_obs()
 
         # only positive x axis movement is encouraged
@@ -82,7 +82,7 @@ class SpringCreatureLocomotion(gym.Env):
         if obs[0] - self.prev_pos_x != 0:
             reward = (obs[0] - self.prev_pos_x) ** 3 / (obs[0] - self.prev_pos_x) - \
                      (obs[1] - self.prev_pos_y) ** 2    # y axis movement should be avoided
-        else: # no x movement 
+        else: # no x movement
             reward = - (obs[1] - self.prev_pos_y) ** 2
 
 

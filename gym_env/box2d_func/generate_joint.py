@@ -109,12 +109,12 @@ def generate_joint(box2d_world, base_body,
                         hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
                         if hit_distance < min_hit_distance:
                             # print("lower_hit_distance")
-                            min_hit_distance = hit_distance
-                            limb_extension = tmp_body
+                            min_hit_distance = deepcopy(hit_distance)
+                            limb_extension = copy(tmp_body)
                             spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                             new_limb = False
                             if limb_extension == None:
-                                print(limb_extension)
+                                print("reference is nan", tmp_body)
         except:
             raise
 
