@@ -104,17 +104,21 @@ def generate_joint(box2d_world, base_body,
             if type(tmp_body.fixtures[0].shape) is not b2CircleShape:
                     hit = tmp_body.fixtures[0].RayCast(output, input, 0)
                     if hit:
-                        hit_once = True
+                        #hit_once = True
                         hit_distance = output.fraction * (input.p2 - input.p1)
                         hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
                         if hit_distance < min_hit_distance:
+                            hit_once = True
                             # print("lower_hit_distance")
                             min_hit_distance = deepcopy(hit_distance)
                             limb_extension = copy(tmp_body)
                             spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                             new_limb = False
-                            if limb_extension == None:
-                                print("reference is nan", tmp_body)
+                            # if limb_extension == None:
+                            #     print("reference is nan", tmp_body)
+                        # if limb_extension == None:
+                        #     print(hit_distance)
+                        #     print(min_hit_distance)
         except:
             raise
 

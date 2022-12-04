@@ -73,7 +73,7 @@ class SpringCreatureLocomotion(gym.Env):
                 joint.motorSpeed = 30 * sin(2 * pi * self.cycle_time / self.cycle)
 
         self.world.Step(TIMESTEP, VEL_ITERS, POS_ITERS)
-        if isnan(self.base_body.popsition[0]) or isnan(self.base_body.popsition[1]):
+        if isnan(self.base_body.position[0]) or isnan(self.base_body.position[1]):
             print("updated base body is nan", self.base_body)
         obs = self._get_obs()
 
