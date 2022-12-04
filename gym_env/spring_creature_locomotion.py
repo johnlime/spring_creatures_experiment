@@ -76,8 +76,12 @@ class SpringCreatureLocomotion(gym.Env):
         obs = self._get_obs()
 
         # only positive x axis movement is encouraged
-        reward = (obs[0] - self.prev_pos_x) ** 3 / (obs[0] - self.prev_pos_x) - \
-                 (obs[1] - self.prev_pos_y) ** 2    # y axis movement should be avoided
+        reward = 0
+        if obs[0] - self.prev_pos_x != 0:
+            reward = (obs[0] - self.prev_pos_x) ** 3 / (obs[0] - self.prev_pos_x) - \
+                     (obs[1] - self.prev_pos_y) ** 2    # y axis movement should be avoided
+        else: # no x movement 
+            reward = - (obs[1] - self.prev_pos_y) ** 2
 
 
         done = True
