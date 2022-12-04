@@ -49,7 +49,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                     body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
                     body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
                     ])
-                print(genome)
+                #print(genome)
                 if genome[0]: # should dictate whether to generate genome or not
                     new_limb, limb_reference = generate_joint_from_genome(box2d_world,
                                                                           body,
@@ -141,7 +141,13 @@ def generate_joint(box2d_world, base_body,
         # prismatic-distance joint settings
         prismatic_translation_low = -np.inf, prismatic_translation_high = 20,
         ):
-
+    # print(b2_epsilon)
+    # print((ext_dim_x) * (ext_dim_y))
+    # does not generate joints
+    assert ext_dim_x > 0 and ext_dim_y > 0
+    if (ext_dim_x) * (ext_dim_y) > 10**(2):
+        print(1)
+        return False, None
     """
     Generate Knob for Prismatic-Distance Joint
     """
@@ -217,8 +223,15 @@ def generate_joint(box2d_world, base_body,
         # Generate Body Extension and Connect Spring
         #####
         limb_extension_position = input.p1 + (input.p2 - input.p1) * joint_set_distance
-        print(limb_extension_position)
-        print((ext_dim_x, ext_dim_y))
+        # print(limb_extension_position)
+        # print((ext_dim_x, ext_dim_y))
+        # print(b2FixtureDef(density = 2.0,
+        #                             friction = 0.6,
+        #                             shape = b2PolygonShape(
+        #                                 box = (ext_dim_x, ext_dim_y)
+        #                                 ),
+        #                             ))
+        # print()
         limb_extension = box2d_world.CreateDynamicBody(
             position = (limb_extension_position[0],
                         limb_extension_position[1]),
