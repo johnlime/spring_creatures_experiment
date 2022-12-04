@@ -21,7 +21,6 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                                 shape = b2PolygonShape(box = (dim_x, dim_y)),
                                 ),
     )
-
     bodies_to_scan = [limb_base]
     body_count = 1
 
@@ -41,7 +40,9 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
         """
         Recursively generate positions for morphogen functions (CPPN) to generate limbs from
         """
-        while len(bodies_to_scan) != 0 or body_count > BODY_LIMIT:
+        while len(bodies_to_scan) != 0 or body_count < BODY_LIMIT:
+            if len(bodies_to_scan) == 0 or body_count >= BODY_LIMIT:
+                break
             body = bodies_to_scan[0]
             knob_x_ratio = 0
             knob_y_ratio = 0
@@ -78,7 +79,6 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                         bodies_to_scan.append(limb_reference)
                         body_count += 1
             bodies_to_scan.pop(0)
-
 
     """
     Body Aggregation (After body generation, to save processing time)
@@ -219,8 +219,11 @@ def generate_joint(box2d_world, base_body,
                             limb_extension = tmp_body
                             spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                             new_limb = False
+                            if limb_extension == None:
+                                print(limb_extension)
         except:
-            pass
+            raise
+        
 
     if not hit_once:
         #####
@@ -242,7 +245,11 @@ def generate_joint(box2d_world, base_body,
         limb_extension.fixtures[0].RayCast(output, input, 0)
         spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
 
-    assert limb_extension != None and spring_joint_anchor != None
+    if limb_extension == None or spring_joint_anchor == None:
+        print(hit_once, limb_extension, spring_joint_anchor)
+    
+    assert limb_extension != None and spring_joint_anchor != None 
+
 
     prismatic_joint = box2d_world.CreatePrismaticJoint(
         bodyA = knob,

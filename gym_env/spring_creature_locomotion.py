@@ -49,6 +49,8 @@ class SpringCreatureLocomotion(gym.Env):
 
     def _get_obs(self):
         obs = [self.base_body.position[0], self.base_body.position[1]]
+        if not self.observation_space.contains(obs):
+            print(self.base_body)
         assert self.observation_space.contains(obs)
         return obs
 
