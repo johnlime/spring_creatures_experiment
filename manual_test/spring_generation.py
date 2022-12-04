@@ -120,6 +120,10 @@ class SpringGeneration (Framework):
                         enableLimit = True
                     )
 
+        for body in self.world.bodies:
+            body.linearDamping = 0.1
+            body.angularDamping = 0.1
+
         self.go = False
         self.time = 0.0
 

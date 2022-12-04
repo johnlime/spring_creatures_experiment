@@ -100,6 +100,10 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                 )
             # print(points)
 
+    for body in box2d_world.bodies:
+        body.linearDamping = 0.1
+        body.angularDamping = 0.1
+
     return limb_base
 
 def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
