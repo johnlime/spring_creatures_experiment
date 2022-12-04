@@ -311,6 +311,11 @@ def raycast(origin_fixture, origin_position, raycast_relative_angle, raycast_dis
     normal_vector = np.empty(2)
     if detected_edge["horizontal"]:
         normal_vector[0], normal_vector[1] = 0, 1
+    elif detected_edge["slope"] == 0:
+        if origin_position[0] - origin_fixture.body.position[0]
+            normal_vector[0], normal_vector[1] = 1, 0
+        else:
+            normal_vector[0], normal_vector[1] = -1, 0
     else:
         normal_vector = np.array([1, - 1 / detected_edge["slope"]])
         normal_vector_norm = np.linalg.norm(normal_vector, 2)
