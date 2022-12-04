@@ -7,6 +7,7 @@ from math import sin, cos, pi, sqrt
 TIMESTEP = 1.0 / 60
 VEL_ITERS = 6
 POS_ITERS = 2
+BODY_LIMIT = 20
 
 def spring_creature_generation(box2d_world, dim_x, dim_y,
                                morphogen_function = None):
@@ -22,6 +23,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
     )
 
     bodies_to_scan = [limb_base]
+    body_count = 1
 
     if morphogen_function == None:
         generate_joint(box2d_world, limb_base, 0.90, 1)
@@ -39,7 +41,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
         """
         Recursively generate positions for morphogen functions (CPPN) to generate limbs from
         """
-        while len(bodies_to_scan) != 0:
+        while len(bodies_to_scan) != 0 or body_count > BODY_LIMIT:
             body = bodies_to_scan[0]
             knob_x_ratio = 0
             knob_y_ratio = 0
@@ -58,6 +60,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                                                                           genome)
                     if new_limb:
                         bodies_to_scan.append(limb_reference)
+                        body_count += 1
 
             for y in range(1, 10):
                 knob_y_ratio = 0.1 * y
@@ -73,6 +76,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                                                                           genome)
                     if new_limb:
                         bodies_to_scan.append(limb_reference)
+                        body_count += 1
             bodies_to_scan.pop(0)
 
 
@@ -215,8 +219,6 @@ def generate_joint(box2d_world, base_body,
                             limb_extension = tmp_body
                             spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                             new_limb = False
-                            # print(tmp_body)           # debugging
-                            # print(hit_point, min_hit_distance)
         except:
             pass
 
@@ -225,15 +227,6 @@ def generate_joint(box2d_world, base_body,
         # Generate Body Extension and Connect Spring
         #####
         limb_extension_position = input.p1 + (input.p2 - input.p1) * joint_set_distance
-        # print(limb_extension_position)
-        # print((ext_dim_x, ext_dim_y))
-        # print(b2FixtureDef(density = 2.0,
-        #                             friction = 0.6,
-        #                             shape = b2PolygonShape(
-        #                                 box = (ext_dim_x, ext_dim_y)
-        #                                 ),
-        #                             ))
-        # print()
         limb_extension = box2d_world.CreateDynamicBody(
             position = (limb_extension_position[0],
                         limb_extension_position[1]),
