@@ -13,27 +13,26 @@ from gym_env import SpringCreatureGenerationTest
 import time
 
 runs_per_net = 2
-
+# def cppn 
 # Use the NN network phenotype and the discrete actuator force function.
 def eval_genome(genome, config):
+    genome_return = genome
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
     fitnesses = []
 
     for runs in range(runs_per_net):
-        env = SpringCreatureLocomotion()
+        env = SpringCreatureLocomotion(net.activate)
         #env = gym.make("CartPole-v1")
         obs = env.reset()
         fitness = 0.0
         for i in range(500):
-            print(obs[0])
-            action = np.argmax(net.activate(obs[0]))#env.action_space.sample())
-            
-            obs, reward, done, info = env.step(action)
+            #action = np.argmax(net.activate(obs))#env.action_space.sample())
+            obs, reward, done, info = env.step()
             fitness += reward
         fitnesses.append(fitness)
-
     return np.mean(fitnesses)
+
 
 
 def eval_genomes(genomes, config):

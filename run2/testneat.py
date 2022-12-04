@@ -30,8 +30,8 @@ env = SpringCreatureLocomotion()
 observation = env.reset()
 
 for _ in range(500):
-    actions = env.action_space.sample()
+    action = np.argmax(net.activate(observation))
 
-    observation, reward, done, info = env.step(actions)
+    observation, reward, done, info = env.step(action)
     env.render()
 

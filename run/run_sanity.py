@@ -7,9 +7,11 @@ env = SpringCreatureLocomotion()
 
 obs = env.reset()
 for _ in range(1000):
-        actions = net.activate(obs)
+        actions = env.action_space.sample()
+        print(actions)
         obs, reward, done, info = env.step(actions)
-        print(obs, reward)
+        print(obs)
+        #print(obs, reward)
         env.render()
 
 env.close()

@@ -57,10 +57,11 @@ class SpringCreatureLocomotion(gym.Env):
         return info
 
     def reset(self):
-        return self._get_obs(), self._get_info()
+        return self._get_obs()
 
     def step(self, action = 0):
-        assert self.action_space.contains(action)
+        err_msg = f"{action!r} ({type(action)}) invalid"
+        assert self.action_space.contains(action), err_msg
 
         # oscillation of springs
         self.cycle_time += 1

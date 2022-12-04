@@ -49,6 +49,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                     body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
                     body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
                     ])
+                print(genome)
                 if genome[0]: # should dictate whether to generate genome or not
                     new_limb, limb_reference = generate_joint_from_genome(box2d_world,
                                                                           body,
@@ -103,13 +104,15 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
     return limb_base
 
 def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
+
     """
-    Genome
+    Materials
     0: Whether to generate the genome or not
     1: Joint angle [- np.pi, np.pi]
     2: Joint distance
     3, 4: New body's dimensions
     """
+
     if genome[1] > np.pi:
         genome[1] = np.pi
     elif genome[1] < -np.pi:
@@ -211,6 +214,8 @@ def generate_joint(box2d_world, base_body,
         # Generate Body Extension and Connect Spring
         #####
         limb_extension_position = input.p1 + (input.p2 - input.p1) * joint_set_distance
+        print(limb_extension_position)
+        print((ext_dim_x, ext_dim_y))
         limb_extension = box2d_world.CreateDynamicBody(
             position = (limb_extension_position[0],
                         limb_extension_position[1]),
@@ -307,10 +312,13 @@ def raycast(origin_fixture, origin_position, raycast_relative_angle, raycast_dis
     normal_vector = np.empty(2)
     if detected_edge["horizontal"]:
         normal_vector[0], normal_vector[1] = 0, 1
-    else:
-        normal_vector = np.array([1, - 1 / detected_edge["slope"]])
-        normal_vector_norm = np.linalg.norm(normal_vector, 2)
-        normal_vector = normal_vector / normal_vector_norm
+    else:       
+        if detected_edge["slope"] == 0:
+            normal_vector[0], normal_vector[1] = 1, 0
+        else:
+            normal_vector = np.array([1, - 1 / detected_edge["slope"]])
+            normal_vector_norm = np.linalg.norm(normal_vector, 2)
+            normal_vector = normal_vector / normal_vector_norm
 
     assert -np.pi/2 < raycast_relative_angle and raycast_relative_angle < np.pi/2
 
