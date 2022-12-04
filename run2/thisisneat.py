@@ -1,46 +1,38 @@
-# pip3 install gym
-# pip3 install neat-python
-
-# for gym stuff: 
-# apt install xvfb ffmpeg xorg-dev libsdl2-dev swig cmake
-# pip3 install gym[box2d]
-
 import multiprocessing
 import os
 import pickle
 
 import neat
 import numpy as np
-#import cart_pole
+
 import gym
 
+from gym_env import SpringCreatureLocomotion
+from gym_env import SpringCreatureGenerationTest
 
+import time
 
 runs_per_net = 2
-
-
-
+# def cppn 
 # Use the NN network phenotype and the discrete actuator force function.
 def eval_genome(genome, config):
+    genome_return = genome
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
     fitnesses = []
 
     for runs in range(runs_per_net):
-        env = gym.make("BipedalWalker-v3")
-
-        observation = env.reset()
+        env = SpringCreatureLocomotion(net.activate)
+        #env = gym.make("CartPole-v1")
+        obs = env.reset()
         fitness = 0.0
-        done = False
-        while not done:
-
-            action = net.activate(observation)
-            observation, reward, done, info = env.step(action)
+        for i in range(500):
+            #action = np.argmax(net.activate(obs))#env.action_space.sample())
+            obs, reward, done, info = env.step()
             fitness += reward
-
         fitnesses.append(fitness)
-
     return np.mean(fitnesses)
+
 
 
 def eval_genomes(genomes, config):

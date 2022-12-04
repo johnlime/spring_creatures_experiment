@@ -49,6 +49,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                     body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
                     body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
                     ])
+                print(genome)
                 if genome[0]: # should dictate whether to generate genome or not
                     new_limb, limb_reference = generate_joint_from_genome(box2d_world,
                                                                           body,
@@ -107,8 +108,9 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
     return limb_base
 
 def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
+
     """
-    Genome
+    Materials
     0: Whether to generate the genome or not
     1: Joint angle [- np.pi, np.pi]
     2: Joint distance
@@ -215,6 +217,8 @@ def generate_joint(box2d_world, base_body,
         # Generate Body Extension and Connect Spring
         #####
         limb_extension_position = input.p1 + (input.p2 - input.p1) * joint_set_distance
+        print(limb_extension_position)
+        print((ext_dim_x, ext_dim_y))
         limb_extension = box2d_world.CreateDynamicBody(
             position = (limb_extension_position[0],
                         limb_extension_position[1]),

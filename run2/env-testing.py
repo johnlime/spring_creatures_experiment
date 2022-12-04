@@ -1,3 +1,5 @@
+
+
 from gym_env import SpringCreatureLocomotion
 from gym_env import SpringCreatureGenerationTest#SpringCreatureGenerationTest
 import gym
@@ -6,7 +8,7 @@ import gym
 env = SpringCreatureLocomotion()
 
 obs = env.reset()
-for _ in range(1):
+for _ in range(500):
         actions = env.action_space.sample()
         obs, reward, done, info = env.step(actions)
         print(obs, reward)

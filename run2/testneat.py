@@ -4,6 +4,10 @@ import neat
 import gym 
 import numpy as np
 
+
+from gym_env import SpringCreatureLocomotion
+from gym_env import SpringCreatureGenerationTest#SpringCreatureGenerationTest
+
 # load the winner
 with open('winner', 'rb') as f:
     c = pickle.load(f)
@@ -21,13 +25,12 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 
 net = neat.nn.FeedForwardNetwork.create(c, config)
 
-
-env = gym.make("BipedalWalker-v3")
+#env = gym.make("CartPole-v1")
+env = SpringCreatureLocomotion()
 observation = env.reset()
 
-done = False
-while not done:
-    action = net.activate(observation)
+for _ in range(500):
+    action = np.argmax(net.activate(observation))
 
     observation, reward, done, info = env.step(action)
     env.render()

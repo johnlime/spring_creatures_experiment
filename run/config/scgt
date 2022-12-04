@@ -1,3 +1,9 @@
+# HyperNEAT configuration for CartPole-v1
+#
+# Copyright (C) Adrian Westh and Simon D. Levy
+#
+# MIT License
+
 [NEAT]
 fitness_criterion      = max
 fitness_threshold      = 475
@@ -7,7 +13,7 @@ no_fitness_termination = False
 generations            = 100
 
 [Gym]
-environment = SpringCreatureGenerationTest-v0
+environment = SpringCreatureLocomotion-v0
 episode_reps = 10
 
 [Substrate]
