@@ -74,7 +74,7 @@ class SpringCreatureLocomotion(gym.Env):
 
         self.world.Step(TIMESTEP, VEL_ITERS, POS_ITERS)
         if isnan(self.base_body.position[0]) or isnan(self.base_body.position[1]):
-            print("updated base body is nan", self.base_body)
+            print("updated base body is nan", self.base_body, self.prev_pos_x, self.prev_pos_y)
         obs = self._get_obs()
 
         # only positive x axis movement is encouraged
