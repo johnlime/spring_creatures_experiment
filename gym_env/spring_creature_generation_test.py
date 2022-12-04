@@ -56,6 +56,7 @@ class SpringCreatureGenerationTest(gym.Env):
 
     def step(self, action = 0):
         assert self.action_space.contains(action)
+        self.world.Step(TIMESTEP, VEL_ITERS, POS_ITERS)
         obs = self._get_obs()
         reward = 0
         done = True
@@ -86,8 +87,8 @@ class SpringCreatureGenerationTest(gym.Env):
                     fixture_vertices = []
                     # rotate + translate vertices
                     for i in range(len(fixture.shape.vertices)):
-                        x = fixture.shape.vertices[i][0] * cos(body.angle) - \
-                            fixture.shape.vertices[i][1] * sin(body.angle) + \
+                        x = fixture.shape.vertices[i][0] * cos(-body.angle) - \
+                            fixture.shape.vertices[i][1] * sin(-body.angle) + \
                             body.position[0]
 
                         y = fixture.shape.vertices[i][0] * sin(body.angle) - \

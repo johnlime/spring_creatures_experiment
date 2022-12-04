@@ -58,25 +58,40 @@ class SpringGeneration (Framework):
             """
             Recursively generate positions for morphogen functions (CPPN) to generate limbs from
             """
-            ### this is a sketch and probably doen't work
-            pass
-            # while len(bodies_to_scan) != 0:
-            #     body = bodies_to_scan[0]
-            #     knob_x_ratio = 0
-            #     knob_y_ratio = 0
-            #     for x in range(1, 10):
-            #         knob_x_ratio = 0.1 * x
-            #         for y in range(1, 10):
-            #             knob_y_ratio = 0.1 * y
-            #             genome = morphogen_function([
-            #                 body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
-            #                 body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
-            #                 ])
-            #             if genome[0]: # should dictate whether to generate genome or not
-            #                 new_limb, limb_reference = self.generate_joint(body, genome)
-            #                 if new_limb:
-            #                     bodies_to_scan.append(limb_reference)
-            #     bodies_to_scan.pop(0)
+            while len(bodies_to_scan) != 0:
+                body = bodies_to_scan[0]
+                knob_x_ratio = 0
+                knob_y_ratio = 0
+                for x in range(1, 10):
+                    knob_x_ratio = 0.1 * x
+                    genome = morphogen_function([
+                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
+                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
+                        ])
+                    if genome[0]: # should dictate whether to generate genome or not
+                        new_limb, limb_reference = generate_joint_from_genome(box2d_world,
+                                                                              body,
+                                                                              knob_x_ratio,
+                                                                              1,
+                                                                              genome)
+                        if new_limb:
+                            bodies_to_scan.append(limb_reference)
+
+                for y in range(1, 10):
+                    knob_y_ratio = 0.1 * y
+                    genome = morphogen_function([
+                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * 1,
+                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
+                        ])
+                    if genome[0]: # should dictate whether to generate genome or not
+                        new_limb, limb_reference = generate_joint_from_genome(box2d_world,
+                                                                              body,
+                                                                              1,
+                                                                              knob_y_ratio,
+                                                                              genome)
+                        if new_limb:
+                            bodies_to_scan.append(limb_reference)
+                bodies_to_scan.pop(0)
 
 
         """
@@ -84,26 +99,48 @@ class SpringGeneration (Framework):
         """
         Framework.Step(self, default_settings)      # collision or overlap are only detected simulation step
         for i, contact in enumerate(self.world.contacts):
-            worldManifold = b2WorldManifold()
-            worldManifold.Initialize(contact.manifold,
-                                     contact.fixtureA.body.transform,
-                                     contact.fixtureA.shape.radius,
-                                     contact.fixtureB.body.transform,
-                                     contact.fixtureB.shape.radius)
-            points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
-            for point in points:
-                self.world.CreateRevoluteJoint(
-                    bodyA = contact.fixtureA.body,
-                    bodyB = contact.fixtureB.body,
-                    anchor = point,
-                    lowerAngle = 0,
-                    upperAngle = 0,
-                    enableLimit = True
-                )
-            print(points)
+            if type(contact.fixtureA.shape) == b2PolygonShape and \
+                type(contact.fixtureB.shape) == b2PolygonShape:
+                worldManifold = b2WorldManifold()
+                worldManifold.Initialize(contact.manifold,
+                                         contact.fixtureA.body.transform,
+                                         contact.fixtureA.shape.radius,
+                                         contact.fixtureB.body.transform,
+                                         contact.fixtureB.shape.radius)
+                points = [worldManifold.points[i] for i in range(contact.manifold.pointCount)]
+                # print(points)
+
+                for point in points:
+                    self.world.CreateRevoluteJoint(
+                        bodyA = contact.fixtureA.body,
+                        bodyB = contact.fixtureB.body,
+                        anchor = point,
+                        lowerAngle = 0,
+                        upperAngle = 0,
+                        enableLimit = True
+                    )
 
         self.go = False
         self.time = 0.0
+
+        self.cycle = 100.0
+        self.cycle_time = 0.0
+
+    def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
+        """
+        Genome
+        0: Whether to generate the genome or not
+        1: Joint angle (- np.pi, np.pi)
+        2: Joint distance
+        """
+        return generate_joint(box2d_world, base_body,
+                              knob_x_ratio, knob_y_ratio,
+                              joint_angle = genome[1],
+                              joint_set_distance = genome[2],
+                              ext_dim_x = genome[3],
+                              ext_dim_y = genome[4],
+                              prismatic_translation_high = genome[3]
+                              )
 
     def generate_joint(self, base_body,
             # joint extension...
@@ -177,15 +214,15 @@ class SpringGeneration (Framework):
                             hit_distance = output.fraction * (input.p2 - input.p1)
                             hit_distance = sqrt(hit_distance[0] ** 2 + hit_distance[1] ** 2)
                             if hit_distance < min_hit_distance:
-                                print("lower_hit_distance")
+                                # print("lower_hit_distance")
                                 min_hit_distance = hit_distance
                                 limb_extension = tmp_body
                                 spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                                 new_limb = False
-                                print(tmp_body)           # debugging
-                                print(hit_point, min_hit_distance)
+                                # print(tmp_body)           # debugging
+                                # print(hit_point, min_hit_distance)
             except:
-                pass
+                print(tmp_body)
 
         if not hit_once:
             #####
@@ -218,21 +255,22 @@ class SpringGeneration (Framework):
             lowerTranslation = prismatic_translation_low,
             upperTranslation = prismatic_translation_high,
             enableLimit = True,
-            #motorForce = 1.0, #(Doesn't work)
+            #motorForce = 1.0, #(Doesn't work),
+            maxMotorForce = 10 ** 4,
             motorSpeed = 0.0,
             enableMotor = True,
         )
 
-        distance_joint = self.world.CreateDistanceJoint(
-            bodyA = knob,
-            bodyB = limb_extension,
-            anchorA = knob.worldCenter,
-            anchorB = spring_joint_anchor,
-            # oscillations per second (for evey oscillator with 0 damping ratio)
-            frequencyHz = 2.0,
-            dampingRatio = 0.1,
-            collideConnected = True
-        )
+        # distance_joint = self.world.CreateDistanceJoint(
+        #     bodyA = knob,
+        #     bodyB = limb_extension,
+        #     anchorA = knob.worldCenter,
+        #     anchorB = spring_joint_anchor,
+        #     # oscillations per second (for evey oscillator with 0 damping ratio)
+        #     frequencyHz = 2.0,
+        #     dampingRatio = 0.1,
+        #     collideConnected = True
+        # )
 
         return new_limb_boolean, limb_extension
 
@@ -308,6 +346,15 @@ class SpringGeneration (Framework):
             self.go = not self.go
 
     def Step(self, settings = default_settings):
+        self.cycle_time += 1
+        if self.cycle_time >= self.cycle:
+            self.cycle_time = 0.0
+
+        for joint in self.world.joints:
+            if type(joint) == b2PrismaticJoint:
+                joint.motorSpeed = 30 * sin(2 * pi * self.cycle_time / self.cycle)
+
+
         Framework.Step(self, settings)
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz

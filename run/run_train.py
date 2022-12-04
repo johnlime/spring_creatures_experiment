@@ -24,8 +24,8 @@ from pureples.shared.substrate import Substrate
 
 from neat_gym import _gym_make, _is_discrete, eval_net
 from neat_gym.novelty import Novelty
-
 from gym_env import SpringCreatureGenerationTest
+from gym_env import SpringCreatureLocomotion
 
 class _GymNeatConfig(object):
     '''
@@ -51,7 +51,7 @@ class _GymNeatConfig(object):
         self.reproduction_type = neat.DefaultReproduction
         self.species_set_type = neat.DefaultSpeciesSet
         self.stagnation_type = neat.DefaultStagnation
-        
+
         parameters = ConfigParser()
         with open(args.configfile) as f:
             if hasattr(parameters, 'read_file'):
@@ -63,8 +63,6 @@ class _GymNeatConfig(object):
 
             try:
                 names = parameters['Names']
-                
-
                 for idx, name in enumerate(eval(names['input'])):
                     self.node_names[-idx-1] = name
                 for idx, name in enumerate(eval(names['output'])):
@@ -94,9 +92,10 @@ class _GymNeatConfig(object):
         gympar = parameters['Gym']
         env_name = gympar['environment']
         self.reps = int(gympar['episode_reps'])
+
         # Make gym environment form name in command-line arguments
-        
         env = _gym_make(env_name)
+
         # Get input/output layout from environment, or from layout for Hyper
         if layout is None:
             num_inputs = env.observation_space.shape[0]
@@ -457,9 +456,7 @@ class _GymPopulation(Population):
             gen += 1
 
             self.config.current_evaluations = 0
-
             self.reporters.start_generation(self.generation)
-
             # Evaluate all genomes using the user-provided function.
             fitness_function(list(self.population.items()), self.config)
 
@@ -703,13 +700,10 @@ class _StdOutReporter(StdOutReporter):
 
 
 def main():
-
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
             formatter_class=ArgumentDefaultsHelpFormatter)
-    
     group = parser.add_mutually_exclusive_group()
-    
     parser.add_argument('configfile', metavar='CONFIGFILE',
                         help='input config file')
     group.add_argument('--hyper', action='store_true', help='Use HyperNEAT')
@@ -720,7 +714,7 @@ def main():
     parser.add_argument('--maxtime', default=None, type=int,
                         help='Maximum time in seconds')
     args = parser.parse_args()
-    
+
     # Check for HyperNEAT, ES-HyperNEAT
     if args.hyper:
         config = _GymHyperConfig(args)
@@ -728,9 +722,8 @@ def main():
         config = _GymEsHyperConfig(args)
     # Default to original NEAT
     else:
-        
         config = _GymNeatConfig(args)
-    
+
     # Create a statistics reporter
     stats = neat.StatisticsReporter()
 
