@@ -183,7 +183,7 @@ class SpringGeneration (Framework):
                                 spring_joint_anchor = input.p1 + output.fraction * (input.p2 - input.p1)
                                 new_limb = False
                                 print(tmp_body)           # debugging
-                                print(hit_point, min_hit_distance)
+                                #print(hit_point, min_hit_distance)
             except:
                 pass
 
