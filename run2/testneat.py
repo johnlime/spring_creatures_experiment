@@ -1,7 +1,7 @@
 import os
 import pickle
 import neat
-import gym 
+import gym
 import numpy as np
 
 
@@ -26,12 +26,9 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 net = neat.nn.FeedForwardNetwork.create(c, config)
 
 #env = gym.make("CartPole-v1")
-env = SpringCreatureLocomotion()
+env = SpringCreatureLocomotion(net.activate)
 observation = env.reset()
 
 for _ in range(500):
-    action = np.argmax(net.activate(observation))
-
-    observation, reward, done, info = env.step(action)
+    observation, reward, done, info = env.step()
     env.render()
-
