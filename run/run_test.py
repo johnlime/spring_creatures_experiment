@@ -3,32 +3,53 @@ import pickle
 import neat
 import gym
 import numpy as np
-
+import argparse
+import configparser
 
 from gym_env import SpringCreatureLocomotion
 from gym_env import SpringCreatureGenerationTest#SpringCreatureGenerationTest
 
-# load the winner
-with open('winner', 'rb') as f:
-    c = pickle.load(f)
-
-print('Loaded genome:')
-print(c)
-
-# Load the config file, which is assumed to live in
-# the same directory as this script.
+# config file is assumed to live in the same directory as this script.
 local_dir = os.path.dirname(__file__)
 config_path = os.path.join(local_dir, 'config')
-config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                     neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                     config_path)
 
-net = neat.nn.FeedForwardNetwork.create(c, config)
+def test(genome):
+    # Load the config file
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_path)
 
-#env = gym.make("CartPole-v1")
-env = SpringCreatureLocomotion(net.activate)
-observation = env.reset()
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-for _ in range(500):
-    observation, reward, done, info = env.step()
-    env.render()
+    #env = gym.make("CartPole-v1")
+    env = SpringCreatureLocomotion(net.activate)
+    observation = env.reset()
+
+    for _ in range(500):
+        observation, reward, done, info = env.step()
+        env.render()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--random', action = 'store_true')
+    arg = parser.parse_args()
+
+    # random or winner genome
+    c = None
+    if arg.random == False:
+        # load the winner
+        with open('winner', 'rb') as f:
+            c = pickle.load(f)
+        print('Loaded genome:')
+        print(c)
+    else:
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        param_dict = {}
+        for key in config["DefaultGenome"]:
+            param_dict[key] = str(config["DefaultGenome"][key])
+        config = neat.DefaultGenome.parse_config(param_dict)
+        c = neat.DefaultGenome(key = 0)
+        c.configure_new(config)
+
+    test(c)
