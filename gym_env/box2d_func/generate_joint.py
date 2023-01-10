@@ -124,7 +124,8 @@ def generate_joint(box2d_world, base_body,
                         #     print(hit_distance)
                         #     print(min_hit_distance)
         except:
-            raise
+            print("Warning: body has no fixture") # pygame gui testbed inserts a blank object at origin of every body
+            #raise
 
 
     if not hit_once:

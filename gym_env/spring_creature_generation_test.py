@@ -3,7 +3,7 @@ from gym import spaces
 from Box2D import *
 import pygame
 
-from math import sin, cos, pi, sqrt
+from math import sin, cos, pi
 import numpy as np
 from copy import deepcopy
 

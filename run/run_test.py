@@ -7,7 +7,6 @@ import argparse
 import configparser
 
 from gym_env import SpringCreatureLocomotion
-from gym_env import SpringCreatureGenerationTest#SpringCreatureGenerationTest
 
 # config file is assumed to live in the same directory as this script.
 local_dir = os.path.dirname(__file__)
@@ -36,11 +35,11 @@ if __name__ == '__main__':
     arg = parser.parse_args()
 
     # random or winner genome
-    c = None
+    genome = None
     if arg.random == False:
         # load the winner
         with open('winner', 'rb') as f:
-            c = pickle.load(f)
+            genome = pickle.load(f)
         print('Loaded genome:')
     else:
         config = configparser.ConfigParser()
@@ -49,8 +48,8 @@ if __name__ == '__main__':
         for key in config["DefaultGenome"]:
             param_dict[key] = str(config["DefaultGenome"][key])
         config = neat.DefaultGenome.parse_config(param_dict)
-        c = neat.DefaultGenome(key = 0)
-        c.configure_new(config)
+        genome = neat.DefaultGenome(key = 0)
+        genome.configure_new(config)
         print('Random genome:')
 
-    test(c)
+    test(genome)
