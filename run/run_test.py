@@ -18,8 +18,9 @@ def test(genome):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
-
+    print(genome)
     net = neat.nn.FeedForwardNetwork.create(genome, config)
+    # print(net.node_evals)
 
     #env = gym.make("CartPole-v1")
     env = SpringCreatureLocomotion(net.activate)
@@ -41,7 +42,6 @@ if __name__ == '__main__':
         with open('winner', 'rb') as f:
             c = pickle.load(f)
         print('Loaded genome:')
-        print(c)
     else:
         config = configparser.ConfigParser()
         config.read(config_path)
@@ -51,5 +51,6 @@ if __name__ == '__main__':
         config = neat.DefaultGenome.parse_config(param_dict)
         c = neat.DefaultGenome(key = 0)
         c.configure_new(config)
+        print('Random genome:')
 
     test(c)
