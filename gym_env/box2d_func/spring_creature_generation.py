@@ -48,36 +48,38 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
             knob_y_ratio = 0
             for x in range(1, 10):
                 knob_x_ratio = 0.1 * x
-                genome = morphogen_function([
+                material = morphogen_function([
                     body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
                     body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
                     ])
-                # print(genome)
+                print(material)
 
-                if genome[0] > 0: # should dictate whether to generate genome or not
-                    new_limb, limb_reference = generate_joint_from_genome(box2d_world,
-                                                                          body,
-                                                                          knob_x_ratio,
-                                                                          1,
-                                                                          genome)
+                if material[0] > 0: # should dictate whether to generate limb or not
+                    new_limb, limb_reference = generate_joint_from_material(
+                        box2d_world,
+                        body,
+                        knob_x_ratio,
+                        1,
+                        material)
                     if new_limb:
                         bodies_to_scan.append(limb_reference)
                         body_count += 1
 
             for y in range(1, 10):
                 knob_y_ratio = 0.1 * y
-                genome = morphogen_function([
+                material = morphogen_function([
                     body.position[0] + body.fixtures[0].shape.vertices[0][0] * 1,
                     body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
                     ])
-                # print(genome)
+                print(material)
 
-                if genome[0] > 0: # should dictate whether to generate genome or not
-                    new_limb, limb_reference = generate_joint_from_genome(box2d_world,
-                                                                          body,
-                                                                          1,
-                                                                          knob_y_ratio,
-                                                                          genome)
+                if material[0] > 0: # should dictate whether to generate limb or not
+                    new_limb, limb_reference = generate_joint_from_material(
+                        box2d_world,
+                        body,
+                        1,
+                        knob_y_ratio,
+                        material)
                     if new_limb:
                         bodies_to_scan.append(limb_reference)
                         body_count += 1

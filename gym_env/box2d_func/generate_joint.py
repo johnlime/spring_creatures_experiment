@@ -5,30 +5,34 @@ from math import sqrt
 
 from gym_env.box2d_func.raycast import *
 
-def generate_joint_from_genome(box2d_world, base_body, knob_x_ratio, knob_y_ratio, genome):
+def generate_joint_from_material(box2d_world, base_body, knob_x_ratio, knob_y_ratio, material):
 
     """
     Materials
-    0: Whether to generate the genome or not
+    0: Whether to generate the limb or not
     1: Joint angle [- np.pi, np.pi]
     2: Joint distance
     3, 4: New body's dimensions > 0
     """
-    if genome[1] > np.pi:
-        genome[1] = np.pi
-    elif genome[1] < -np.pi:
-        genome[1] = -np.pi
+    if material[1] > np.pi:
+        material[1] = np.pi
+    elif material[1] < -np.pi:
+        material[1] = -np.pi
 
-    if genome[3] <= 0 or genome[4] <= 0:
+    material[3] = abs(material[3])
+    if material[3] == 0:
+        return False, None
+    material[4] = abs(material[4])
+    if material[4] == 0:
         return False, None
 
     return generate_joint(box2d_world, base_body,
                           knob_x_ratio, knob_y_ratio,
-                          joint_angle = genome[1],
-                          joint_set_distance = genome[2],
-                          ext_dim_x = genome[3],
-                          ext_dim_y = genome[4],
-                          prismatic_translation_high = genome[2]
+                          joint_angle = material[1],
+                          joint_set_distance = material[2],
+                          ext_dim_x = material[3],
+                          ext_dim_y = material[4],
+                          prismatic_translation_high = material[2]
                           )
 
 def generate_joint(box2d_world, base_body,
