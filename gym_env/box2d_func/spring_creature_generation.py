@@ -36,6 +36,8 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                        0.50,
                        1)
 
+        generate_joint(box2d_world, limb_base, 1, 0.50, 0)
+
     else:
         """
         Recursively generate positions for morphogen functions (CPPN) to generate limbs from
@@ -46,38 +48,43 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
             body = bodies_to_scan[0]
             knob_x_ratio = 0
             knob_y_ratio = 0
-            for x in range(1, 10):
-                knob_x_ratio = 0.1 * x
-                material = morphogen_function([
-                    body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
-                    body.position[1] + body.fixtures[0].shape.vertices[0][1] * 1
-                    ])
-                print(material)
+            for sign in (1, -1):
+                print(sign)
+                # top and bottom edges (y is constant)
+                for x in range(1, 10):
+                    knob_x_ratio = 0.1 * x
+                    material = morphogen_function([
+                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
+                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * sign
+                        ])
+                    print(material)
 
-                if material[0] > 0: # should dictate whether to generate limb or not
+                    # if material[0] > 0: # should dictate whether to generate limb or not
                     new_limb, limb_reference = generate_joint_from_material(
                         box2d_world,
                         body,
                         knob_x_ratio,
-                        1,
+                        sign,
                         material)
                     if new_limb:
                         bodies_to_scan.append(limb_reference)
                         body_count += 1
 
-            for y in range(1, 10):
-                knob_y_ratio = 0.1 * y
-                material = morphogen_function([
-                    body.position[0] + body.fixtures[0].shape.vertices[0][0] * 1,
-                    body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
-                    ])
-                print(material)
+            for sign in (1, -1):
+                # left and right edges (x is constant)
+                for y in range(1, 10):
+                    knob_y_ratio = 0.1 * y
+                    material = morphogen_function([
+                        body.position[0] + body.fixtures[0].shape.vertices[0][0] * sign,
+                        body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
+                        ])
+                    print(material)
 
-                if material[0] > 0: # should dictate whether to generate limb or not
+                    # if material[0] > 0: # should dictate whether to generate limb or not
                     new_limb, limb_reference = generate_joint_from_material(
                         box2d_world,
                         body,
-                        1,
+                        sign,
                         knob_y_ratio,
                         material)
                     if new_limb:

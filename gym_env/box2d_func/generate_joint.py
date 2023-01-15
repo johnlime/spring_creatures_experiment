@@ -86,7 +86,7 @@ def generate_joint(box2d_world, base_body,
     )
 
     input = raycast(origin_fixture = base_body.fixtures[0],
-                    origin_position = knob.position,
+                    knob_position = knob.position,
                     raycast_relative_angle = joint_angle,
                     raycast_distance = joint_set_distance)
 
