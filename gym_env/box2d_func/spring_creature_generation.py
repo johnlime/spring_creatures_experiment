@@ -37,6 +37,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                        1)
 
         generate_joint(box2d_world, limb_base, 1, 0.50, 0)
+        generate_joint(box2d_world, limb_base, 0.5, -1, pi/4)
 
     else:
         """

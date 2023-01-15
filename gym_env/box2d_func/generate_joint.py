@@ -38,7 +38,7 @@ def generate_joint_from_material(box2d_world, base_body, knob_x_ratio, knob_y_ra
 def generate_joint(box2d_world, base_body,
         # joint extension...
         knob_x_ratio = 1, knob_y_ratio = 1,     # joint node location
-        joint_angle = np.pi/4,                  # angle of the prismatic joint
+        joint_angle = -np.pi/4,                  # angle of the prismatic joint
         joint_set_distance = 20,                # how far the prismatic joint goes
         # body extension...
         ext_dim_x = 5, ext_dim_y = 5,           # new body's dimensions

@@ -52,17 +52,18 @@ def raycast(origin_fixture, knob_position, raycast_relative_angle, raycast_dista
     """
     # get the normal vector
     normal_vector = np.empty(2)
-    if detected_edge["slope"] == 0: # horizontal
-        if knob_position[1] - origin_fixture.body.position[1]:  # upper edge
-            normal_vector[0], normal_vector[1] = 0, 1
-        else:   # lower edge
-            normal_vector[0], normal_vector[1] = 0, -1
 
-    elif detected_edge["vertical"]:
+    if detected_edge["vertical"]:
         if knob_position[0] - origin_fixture.body.position[0]:  # right edge
             normal_vector[0], normal_vector[1] = 1, 0
         else:   # left edge
             normal_vector[0], normal_vector[1] = -1, 0
+
+    elif detected_edge["slope"] == 0: # horizontal
+        if knob_position[1] - origin_fixture.body.position[1] > 0:  # upper edge
+            normal_vector[0], normal_vector[1] = 0, 1
+        else:   # lower edge
+            normal_vector[0], normal_vector[1] = 0, -1
 
     else:
         normal_vector = np.array([1, - 1 / detected_edge["slope"]])
@@ -75,7 +76,8 @@ def raycast(origin_fixture, knob_position, raycast_relative_angle, raycast_dista
     if normal_vector[1] < 0:   # negative angle if negative sine
         directional_angle *= -1
 
-    directional_angle += raycast_relative_angle - np.pi/2 # relative angle is [-pi, pi] (convert to [0, pi])
+    # relative angle is (-pi/2, pi/2) (no need for conversion due to arithmetic usage)
+    directional_angle += raycast_relative_angle
     directional_vector = np.array([np.cos(directional_angle), np.sin(directional_angle)])
 
     # raycast from knob to a set angle
