@@ -24,10 +24,13 @@ def test(genome):
     #env = gym.make("CartPole-v1")
     env = SpringCreatureLocomotion(net.activate)
     observation = env.reset()
-
+    cumul_reward = 0
     for _ in range(500):
-        observation, reward, done, info = env.step()
+        obs, reward, done, info = env.step()
+        # print(obs, reward)
+        cumul_reward += reward
         env.render()
+    # print(cumul_reward)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

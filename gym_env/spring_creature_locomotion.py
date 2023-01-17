@@ -85,8 +85,11 @@ class SpringCreatureLocomotion(gym.Env):
             reward += (obs[0] - self.prev_pos_x) ** 2
         else:
             reward -= (obs[0] - self.prev_pos_x) ** 2
-        # no x movement; y axis movement should be avoided
-        reward = - (obs[1] - self.prev_pos_y) ** 2
+        # y axis movement should be avoided
+        if (obs[1] - self.prev_pos_y) ** 2 > 1:    # below 1 would result in magnification
+            reward *= 1 / ((obs[1] - self.prev_pos_y) ** 2)
+        else:   # miniscule deduction for miniscule y movement
+            reward -= (obs[1] - self.prev_pos_y) ** 2
 
 
         done = True

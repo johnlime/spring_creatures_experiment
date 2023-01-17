@@ -50,7 +50,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
             knob_x_ratio = 0
             knob_y_ratio = 0
             for sign in (1, -1):
-                print(sign)
+                # print(sign)
                 # top and bottom edges (y is constant)
                 for x in range(1, 10):
                     knob_x_ratio = 0.1 * x
@@ -58,7 +58,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                         body.position[0] + body.fixtures[0].shape.vertices[0][0] * knob_x_ratio,
                         body.position[1] + body.fixtures[0].shape.vertices[0][1] * sign
                         ])
-                    print(material)
+                    # print(material)
 
                     # if material[0] > 0: # should dictate whether to generate limb or not
                     new_limb, limb_reference = generate_joint_from_material(
@@ -79,7 +79,7 @@ def spring_creature_generation(box2d_world, dim_x, dim_y,
                         body.position[0] + body.fixtures[0].shape.vertices[0][0] * sign,
                         body.position[1] + body.fixtures[0].shape.vertices[0][1] * knob_y_ratio
                         ])
-                    print(material)
+                    # print(material)
 
                     # if material[0] > 0: # should dictate whether to generate limb or not
                     new_limb, limb_reference = generate_joint_from_material(

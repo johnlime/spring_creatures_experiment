@@ -13,7 +13,7 @@ from gym_env import SpringCreatureGenerationTest
 import time
 
 runs_per_net = 2
-# def cppn 
+# def cppn
 # Use the NN network phenotype and the discrete actuator force function.
 def eval_genome(genome, config):
     genome_return = genome
@@ -55,7 +55,7 @@ def run():
     pop.add_reporter(neat.StdOutReporter(True))
 
     pe = neat.ParallelEvaluator(multiprocessing.cpu_count(), eval_genome)
-    winner = pop.run(pe.evaluate)
+    winner = pop.run(pe.evaluate, n = 1000)
 
     # Save the winner.
     with open('winner', 'wb') as f:
