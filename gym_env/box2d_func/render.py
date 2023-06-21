@@ -30,8 +30,8 @@ def spring_creature_render(obj):
                         fixture.shape.vertices[i][1] * sin(-body.angle) + \
                         body.position[0]
 
-                    y = fixture.shape.vertices[i][0] * sin(body.angle) - \
-                        fixture.shape.vertices[i][1] * cos(body.angle) + \
+                    y = fixture.shape.vertices[i][0] * sin(-body.angle) + \
+                        fixture.shape.vertices[i][1] * cos(-body.angle) + \
                         body.position[1]
 
                     x = obj.scale * x + obj.window_size // 2 # half the window size

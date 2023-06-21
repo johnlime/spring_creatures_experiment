@@ -11,7 +11,7 @@ from Box2D.examples.settings import fwSettings
 from settings import *
 from gym_env.box2d_func import *
 
-RANDOM_GENOME = True
+RANDOM_GENOME = False
 
 # config file is assumed to live in the same directory as this script.
 local_dir = os.path.dirname(__file__)
@@ -33,8 +33,17 @@ class SpringCreaturePygame (Framework):
                                    dim_x, dim_y,
                                    morphogen_function)
 
+        # for oscillations
+        self.cycle = 100.0
+        self.cycle_time = 0.0
+
         self.go = False
         self.time = 0.0
+
+        # print(len(self.world.contacts))
+        # for body in self.world.bodies:
+        #     for fixture in body.fixtures:
+        #         print(fixture)
 
     def Keyboard(self, key):
         if key == Keys.K_g:
@@ -45,10 +54,14 @@ class SpringCreaturePygame (Framework):
         if self.go and settings.hz > 0.0:
             self.time += 1.0 / settings.hz
 
-        # print(len(self.world.contacts))
-        # for body in self.world.bodies:
-        #     for fixture in body.fixtures:
-        #         print(fixture)
+        # oscillation of springs
+        self.cycle_time += 1
+        if self.cycle_time >= self.cycle:
+            self.cycle_time = 0.0
+
+        for joint in self.world.joints:
+            if type(joint) == b2PrismaticJoint:
+                joint.motorSpeed = 30 * sin(2 * pi * self.cycle_time / self.cycle)
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),
