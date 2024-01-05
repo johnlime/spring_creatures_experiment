@@ -55,13 +55,13 @@ class SpringCreaturePygame (Framework):
             self.time += 1.0 / settings.hz
 
         # oscillation of springs
-        self.cycle_time += 1
-        if self.cycle_time >= self.cycle:
-            self.cycle_time = 0.0
-
-        for joint in self.world.joints:
-            if type(joint) == b2PrismaticJoint:
-                joint.motorSpeed = 30 * sin(2 * pi * self.cycle_time / self.cycle)
+        # self.cycle_time += 1
+        # if self.cycle_time >= self.cycle:
+        #     self.cycle_time = 0.0
+        #
+        # for joint in self.world.joints:
+        #     if type(joint) == b2PrismaticJoint:
+        #         joint.motorSpeed = 30 * sin(2 * pi * self.cycle_time / self.cycle)
 
         renderer = self.renderer
         renderer.DrawPoint(renderer.to_screen((0, 0)),
